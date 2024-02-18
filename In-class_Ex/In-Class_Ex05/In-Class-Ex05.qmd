@@ -1,0 +1,103 @@
+---
+title: "In-Class Exercise 05: Global and Local Measures of Spatial Association"
+format:
+  html: 
+    code-fold: true
+    code-summary: "Show the code"
+execute:
+  eval: true
+  echo: true
+  warning: false
+  freeze: false
+editor: visual
+date: "`r Sys.Date()`"
+---
+
+```{r}
+pacman::p_load(sf, tmap, sfdep, tidyverse)
+```
+
+# Importing geospatial data
+
+```{r}
+#| code-fold: true
+#| code-summary: "show the code"
+hunan <- st_read(dsn = "data/geospatial", layer = "Hunan")
+```
+
+# Importing aspatial data
+
+```{r}
+#| code-fold: true
+#| code-summary: "show the code"
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+# Combining both data table by doing left join
+
+The LHS data in left_join() is sf layer so the return output is also sf layer, doing the reverse won't get the same outcome.
+
+```{r}
+#| code-fold: true
+#| code-summary: "show the code"
+hunan_GDPPC <- left_join(hunan, hunan2012) %>%
+  select(1:4, 7,15)
+```
+
+#Plotting chorepleth map
+
+```{r}
+tmap_mode('plot')
+tm_shape(hunan_GDPPC) +
+  tm_fill("GDPPC",
+          style = "quantile",
+          palette = "Blues",
+          title = "GDPPC") +
+  tm_layout(main.title = "Distribution of GDP per capita  by county, Hunan Province",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45,
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type = "8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha = 0.2)
+```
+
+# Deriving contiguity weights: Queen's method
+
+This is called the tidyverse approach
+
+```{r}
+wm_q <- hunan_GDPPC %>%
+  mutate(nb = st_contiguity(geometry), #rook method, queen = false
+         wt = st_weights(nb,
+                         style = "W"),
+         .before = 1)
+
+```
+
+```{r}
+wm_q
+```
+
+#Computing Global Moran' I This Moran I test give you the test statistic, we want to find out the moran test statistic and also p-value so we can decide if this observation is statistically significant or not. But we do not do this, we do Global Moran' I permutation test below.
+
+```{r}
+#moranI <- global_moran(wm_q$GDPCC,
+                      # wm_q$nb,
+                      # wm_q$wt)
+#glimpse(moranI)
+```
+
+#Performing Global Moran' I permutation test global_moran_perm() is used to perform Monte Carlo stimulation. set.seed(1234) ensure the computation is reproducable. Reduce nsim = 99 or nsim = 49 to not take too much space.
+
+```{r}
+set.seed(1234)
+
+global_moran_perm(wm_q$GDPPC,
+                      wm_q$nb,
+                      wm_q$wt,
+                  nsim = 99)
+```

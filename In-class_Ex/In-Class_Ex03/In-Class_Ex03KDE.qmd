@@ -1,0 +1,170 @@
+---
+title: "In-Class Ex3: Kernel Density Estimation"
+format:
+  html: 
+    code-fold: true
+    code-summary: "Show the code"
+execute:
+  eval: true
+  echo: true
+  warning: false
+  freeze: false
+editor: visual
+date: "`r Sys.Date()`"
+---
+
+```{r}
+#install.packages("maptools", repos = "https://packagemanager.postit.co/cran/2023-10-13")
+```
+
+```{r}
+pacman::p_load(maptools, sf, raster, spatstat, tidyverse)
+```
+
+```{r}
+childcare_sf <- st_read("data/ChildCareServices.geojson") %>%
+  st_transform(crs = 3414)
+
+mpsz_sf <- st_read(dsn = "data", layer = "MP14_SUBZONE_WEB_PL")
+```
+
+#Creating Coastal Outline
+
+```{r}
+sg_sf <- mpsz_sf %>%
+  st_union() 
+#st_combine() is similar but does not dissolve the boundary
+```
+
+```{r}
+plot(sg_sf)
+```
+
+```{r}
+st_crs()
+```
+
+```{r}
+childcare_ppp <- as.ppp(childcare_sf)
+```
+
+```{r}
+summary(childcare_ppp)
+```
+
+```{r}
+plot(childcare_ppp)
+```
+
+Handling duplicated points
+
+```{r}
+sg_owin <- as.owin(sg_sf)
+#as.ppp to convert point table
+```
+
+```{r}
+pg <- mpsz_sf %>%
+  filter(PLN_AREA_N == "PUNGGOL")
+tm <- mpsz_sf %>%
+  filter(PLN_AREA_N == "TAMPINES")
+ck <- mpsz_sf %>%
+  filter(PLN_AREA_N == "CHOA CHU KANG")
+jw <- mpsz_sf %>%
+  filter(PLN_AREA_N == "JURONG WEST")
+
+```
+
+Plotting target planning areas
+
+```{r fig.width = 16, fig.height=10}
+par(mfrow=c(2,2))
+plot(pg, main = "Ponggol")
+plot(tm, main = "Tampines")
+plot(ck, main = "Choa Chu Kang")
+plot(jw, main = "Jurong West")
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```

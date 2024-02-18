@@ -1,0 +1,86 @@
+---
+title: "In-class_Exercise02: R for Geospatial Data Science"
+format:
+  html: 
+    code-fold: true
+    code-summary: "Show the code"
+execute:
+  eval: true
+  echo: true
+  warning: false
+  freeze: false
+editor: visual
+date: "`r Sys.Date()`"
+---
+
+Getting Started
+
+```{r}
+pacman::p_load(arrow, lubridate, sf, tmap, tidyverse)
+```
+
+```{r}
+df <- read_parquet("data/GrabPosisi/part-00000-8bbff892-97d2-4011-9961-703e38972569.c000.snappy.parquet")
+```
+
+```{r}
+df$pingtimestamp <- as_datetime(df$pingtimestamp)
+```
+
+# Extracting trip starting location
+
+```{r}
+origin_df <- df %>%
+  group_by(trj_id) %>%
+  arrange(pingtimestamp) %>%
+  filter(row_number()==1) %>%
+  mutate(weekday = wday(pingtimestamp,
+                        label = TRUE,
+                        abbr = TRUE),
+         start_hr = factor(hour(pingtimestamp)),
+         day = factor(mday(pingtimestamp)))
+```
+
+```{r}
+destination_df <- df %>%
+  group_by(trj_id) %>%
+  arrange(desc(pingtimestamp)) %>% 
+  filter(row_number()==1) %>% 
+  mutate(weekday = wday(pingtimestamp,
+                        label = TRUE,
+                        abbr = TRUE),
+         end_hr = factor(hour(pingtimestamp)),
+         day = factor(mday(pingtimestamp)))
+```
+
+Extracting trip ending locations
+
+```{r}
+write_rds(origin_df, "data/rds/origin_df.rds")
+write_rds(destination_df, "data/rds/destination_df.rds")
+```
+
+```{r}
+origin_df <- read_rds("data/rds/origin_df.rds")
+destination_df <- read_rds("data/rds/destination_df.rds")
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```

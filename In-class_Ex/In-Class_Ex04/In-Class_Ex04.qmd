@@ -1,0 +1,53 @@
+---
+title: "In-Class Exercise 4: Spatial Weights and Applications"
+format:
+  html: 
+    code-fold: true
+    code-summary: "Show the code"
+execute:
+  eval: true
+  echo: true
+  warning: false
+  freeze: false
+editor: visual
+date: "`r Sys.Date()`"
+---
+
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse, knitr, GWmodel)
+```
+
+```{r}
+hunan <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan")
+```
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+```{r}
+hunan <- left_join(hunan,hunan2012)%>%
+  select(1:4, 7, 15)
+
+hunan
+```
+
+```{r}
+hunan_sp <- hunan %>% 
+    as_Spatial()
+
+hunan_sp
+```
+
+```{r}
+gwstat <- gwss(data = hunan_sp,
+               vars = "GDPPC",
+               bw =6,
+               kernel = "bisquare",
+               adaptive = TRUE, 
+               longlat = T)
+gwstat
+
+# bw =6, indicating 6 neighbours 
+```
