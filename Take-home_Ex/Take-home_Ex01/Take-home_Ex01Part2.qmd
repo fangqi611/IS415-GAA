@@ -414,7 +414,7 @@ tmap_animation(all_maps, filename = "images/animated_map.gif",
 knitr::include_graphics("images/animated_map.gif")
 ```
 
-#6. Describe the spatial patterns revealed by the kernel density maps.
+# 6. Describe the spatial patterns revealed by the kernel density maps.
 
 The KDE maps shows us the high density areas with high grab traffic in Singapore, this can be seen from the high density, this means more grab cars will be cluttered in those areas. We can see this in the context of Punggol (NKDE analysis) such as shopping malls or residential complexes where demand is higher. While in Tampines, higher demand is observed at commercial centers or transportation hubs.
 
