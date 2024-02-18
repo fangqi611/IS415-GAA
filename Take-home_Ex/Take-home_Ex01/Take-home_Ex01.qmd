@@ -1,0 +1,380 @@
+---
+title: "Take-home Exercise 1: Application of Spatial Point Patterns Analysis to discover the geographical distribution of Grab hailing services in Singapore"
+date: "4th February 2024"
+date modified: "last-modified"
+format: 
+  html:
+    fontsize: 18px
+execute:
+  echo: true
+  eval: true
+  freeze: true
+  warning: false
+---
+
+# 0. Overview
+
+These are the 3 datasets I will be using in Take-Home Exercise 1
+
+## 0.1 OpenStreetMap
+
+OpenStreetMap dataset consist of Malaysia, Singapore and Brunei regions in Polygon format in shp file. We are going to extract the Singapore region only, and gradually remove the outer islands of Singapore, to examine the traffic flow using GrabPosisi dataset and Master Plan 2019 Subzone Boundary (No Sea) dataset.
+
+## 0.2 Master Plan 2019 Subzone Boundary (No Sea) Dataset
+
+In this dataset, the Planning Regions are divided into smaller Planning Areas. Each Planning Area is further divided into smaller subzones which are usually centred around a focal point such as neighbourhood centre or activity node. We will only be inspecting neighbourhoods in this dataset as the file is too big for us to inspect the the whole of Singapore. This is by taking the intersection between Master Plan 2019 and OpenStreetMap.
+
+The Master Plan is a forward looking guiding plan for Singapore's development in the medium term over the next 10 to 15 years and the planning boundaries may not coincide with existing developments for some areas.
+
+## 0.3 Grab-Posisi - Southeast Asia’s First Comprehensive GPS Trajectory Dataset
+
+Grab-Posisi dataset contains in total 84K trajectories that consist of more than 80 million GPS pings and cover over 1 million km. The average trajectory length is 11.94 km and the average duration per trip is 21.50 minutes. Each trajectory is serialised in a file in Apache Parquet format. The whole dataset size is around 2 GB. Each GPS ping is associated with values for a trajectory ID, latitude, longitude, timestamp (UTC), accuracy level, bearing and speed. The GPS sampling rate is 1 second, which is the highest among all the existing open source datasets.
+
+We will be using the GrabPosisi dataset to inspect only a neighburhood by taking the intersection o GrabPosisi and OpenStreetMap.
+
+# 1. Loading Data
+
+In this section I will install and load my arrow, lubridate, sf, tmap, tidyverse, maptools, sp, raster, spatstat, spNetwork, classInt and viridis packages which will be used widely in this exercise.
+
+```{r}
+pacman::p_load(arrow, lubridate, sf, tmap, tidyverse, maptools, sp, raster, spatstat, spNetwork, classInt, viridis)
+```
+
+## 1.1 Importing a geospatial data, Road set layer from OpenStreetMap
+
+There are 3 files imported here, OpenStreetMap, Master Plan 2019 Subzone Boundary (No Sea) and GrabPosisi. Importing road layer from malaysia-singapore-brunei-latest-free.shp as roads.
+
+We could use either st_read() or readOGR() to read our geospatial data, but it is better to read it in as a simple features dataframe first and then use as_Spatial() to convert it to a Spatial\* object when necessary. This way, I can perform visualisations on both the simple features dataframe and Spatial\* object more easily.
+
+```{r}
+#| eval: false
+roads <- st_read(dsn = "data/geospatial/malaysia-singapore-brunei-latest-free.shp", layer = "gis_osm_roads_free_1")
+```
+
+Transforming roads to 3414, SVY21 file format
+
+```{r}
+#| eval: false
+roads <- st_transform(roads, 3414)
+roads
+```
+
+## 1.2 Importing a geospatial data Master Plan 2019 Subzone Boundary (No Sea)
+
+Importing geospatial data Master Plan 2019 Subzone Boundary (No Sea) as MPSZ down below.
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial/MPSZ-2019", layer = "MPSZ-2019")
+```
+
+## 1.3 Importing a aspatial data Grab Data Frame, GrabPosisi
+
+Using read_parquet() function to import GrabPosisi aspatial file down below.
+
+```{r}
+#| eval: false
+grab <- read_parquet("data/aspatial/GrabPosisi/part-00000-8bbff892-97d2-4011-9961-703e38972569.c000.snappy.parquet")
+```
+
+# 2. Getting the Geospatial Data Layer
+
+## 2.1 Extracting Grab taxi location points by origins
+
+Listing GrabPosisi table
+
+```{r}
+#| eval: false
+list(grab)
+```
+
+```{r}
+#| eval: false
+st_crs(grab)
+```
+
+We have to transform our dataframes into sf objects, and then verify and transform our assigned CRS for our aspatial datasets. Most of these dataset are using WGS84 (ESPG Code 4326) on account of using Latitude and Longitude - so we can do these two things in one go:
+
+```{r}
+#| eval: false
+grab_sf <- st_as_sf(grab, 
+                       coords = c("rawlng", "rawlat"),
+                       crs=4326) %>%
+  st_transform(crs = 3414)
+```
+
+Viewing grab_sf file Checking the newly-converted Spatial\* classes
+
+```{r}
+#| eval: false
+grab_sf
+```
+
+Extracting pingtimestamp from grab dataset in order to get the origin and destination points in the next steps! pingstimestamp is the timing when the customer board or alight the car
+
+```{r}
+#| eval: false
+grab$pingtimestamp <- as_datetime(grab$pingtimestamp)
+```
+
+Getting the origin points which is the location where the driver picks up the customer from:
+
+```{r}
+#| eval: false
+origin_grab <- grab_sf %>%
+  group_by(trj_id) %>%
+  arrange(pingtimestamp) %>%
+  filter(row_number()==1) %>%
+  mutate(weekday = wday(pingtimestamp,
+                        label = TRUE,
+                        abbr = TRUE),
+         start_hr = factor(hour(pingtimestamp)),
+         day = factor(mday(pingtimestamp)))
+```
+
+Importing origin_grab due to the large file size
+
+```{r}
+#| eval: false
+write_rds(origin_grab, "data/rds/origin_grab.rds")
+```
+
+```{r}
+origin_grab <- read_rds("data/rds/origin_grab.rds")
+```
+
+Getting the destination points which is the location where the ride ends and where the customer alights:
+
+```{r}
+#| eval: false
+destination_grab_sf <- grab_sf %>%
+  group_by(trj_id) %>%
+  arrange(desc(pingtimestamp)) %>% 
+  filter(row_number()==1) %>% 
+  mutate(weekday = wday(pingtimestamp,
+                        label = TRUE,
+                        abbr = TRUE),
+         end_hr = factor(hour(pingtimestamp)),
+         day = factor(mday(pingtimestamp)))
+```
+
+Importing destination_grab due to the large file size so it will not cause any loading issues for us!
+
+```{r}
+#| eval: false
+write_rds(destination_grab_sf, "data/rds/destination_grab.rds")
+```
+
+```{r}
+destination_grab <- read_rds("data/rds/destination_grab.rds")
+```
+
+Reflecting origin_grab, the pick ups points in geospatial format here using origin_grab and destination_grab since we got the points already!
+
+```{r}
+tmap_mode('plot')
+tm_shape(origin_grab)+
+  tm_dots()
+```
+
+## 2.2 Extracting Road layer within Singapore excluding outer islands.
+
+Checking the geometry type for mpsz
+
+```{r}
+st_geometry(mpsz)
+```
+
+```{r}
+glimpse(mpsz)
+```
+
+```{r}
+head(mpsz, n=5)  
+```
+
+Plotting mpsz with the outer islands
+
+```{r}
+plot(mpsz)
+```
+
+```{r}
+plot(st_geometry(mpsz))
+```
+
+```{r}
+st_crs(mpsz)
+```
+
+Transforming mpsz t0 3414, SVY21 as that is the file format we want for all of our data, similar to what we did for the grab dataset
+
+```{r}
+mpsz3414 <- st_transform(mpsz, 3414)
+```
+
+```{r}
+st_crs(mpsz3414)
+```
+
+Extracting PLN_AREA_N from mpsz3414, Singapore island without it's outer islands as that is what we want and we do this first so it is easier to reflect the GrabPosisi and OpenStreetMap later on
+
+```{r}
+outer_islands <- mpsz3414[grep("island", mpsz3414$PLN_AREA_N, ignore.case = TRUE), ]
+print(outer_islands)
+```
+
+Subtracting the geometry of the union of the outer islands from the geometry in mpsz3414 we get the costal region of SG without the outer islands.
+
+```{r}
+outerislands_sf <- st_difference(mpsz3414, st_union(outer_islands))
+plot(outerislands_sf)
+```
+
+Extracting roads in Singapore within Singapore boundary without outer islands, sgroads usibg outerislands_sf and roafs intersection we only get the roads in SG. Checking the newly-converted Spatial\* classes.
+
+```{r}
+#| eval: false
+sgroads <- st_intersection(outerislands_sf, roads)
+sgroads
+```
+
+Importing sgroads due to the large file size
+
+```{r}
+#| eval: false
+write_rds(sgroads, "data/rds/sgroads.rds")
+```
+
+```{r}
+sgroads <- read_rds("data/rds/sgroads.rds")
+```
+
+## 2.3 Extracting Singapore boundary layer excluding outer islands
+
+A representation of Singapore's geographical boundary, omitting the outer islands
+
+```{r}
+outerislands_sf <- outerislands_sf %>%
+  st_union() 
+```
+
+```{r}
+plot(outerislands_sf)
+```
+
+```{r}
+plot(st_geometry(outerislands_sf))
+```
+
+### 2.3.1 Creating owin object
+
+Converting sf format for outer islands into spatial class the sp format because you cannot do it directly.
+
+```{r}
+outerislands <- as_Spatial(outerislands_sf)
+```
+
+Spatstat requires the analytical data to be in ppp object form, but since there is no way to directly convert a Spatial\* classes into ppp object, we’ll need to convert the Spatial\* classes into a generic Spatial object first, then convert the generic sp object into ppp object form.
+
+```{r}
+outerislands_sp <- as(outerislands, "SpatialPolygons")
+```
+
+Checking the newly-converted Spatial\* classes
+
+```{r}
+outerislands_sp
+```
+
+I am confining the analysis with a geographical area. In spatstat, the object called owin is specially designed to represent this polygonal region. This produces the Singapore boundary layer excluding outer islands.
+
+```{r}
+sg_owin <- as(outerislands_sp, "owin")
+```
+
+Usually, when analysing spatial point patterns, we’ll confine our analysis within a certain geographical area - such as the Singapore boundary. In spatstat, an object called owin is specially designed to represent this polygonal region.
+
+```{r}
+plot(sg_owin)
+```
+
+```{r}
+summary(sg_owin)
+```
+
+# 3. Deriving traditional Kernel Density Estimation (KDE) layers
+
+This is derived using the grab dataset This code below is converting a spatial dataset named "origin_grab" into a format suitable for analyzing and studying point patterns.
+
+```{r}
+origingrab_ppp <- as.ppp(origin_grab)
+```
+
+Retrieving more information of origingrab_ppp
+
+```{r}
+summary(origingrab_ppp)
+```
+
+Plotting it out
+
+```{r}
+plot(origingrab_ppp)
+```
+
+Plotting origin_grab, whole of Singapore
+
+```{r}
+plot(origin_grab)
+```
+
+## 3.1 Converting owin object into ppp format
+
+This is so that we can remove duplicated points
+
+```{r}
+sg_owin <- as.owin(outerislands_sf)
+#as.ppp to convert point table
+```
+
+```{r}
+plot(sg_owin)
+```
+
+Extracting the specific areas in Singapore which is Ponggol, Tampines, Choa Chu Kang and Jurong West respectively
+
+```{r}
+pg <- mpsz %>%
+  filter(PLN_AREA_N == "PUNGGOL")
+tm <- mpsz %>%
+  filter(PLN_AREA_N == "TAMPINES")
+ck <- mpsz %>%
+  filter(PLN_AREA_N == "CHOA CHU KANG")
+jw <- mpsz %>%
+  filter(PLN_AREA_N == "JURONG WEST")
+```
+
+We are plotting each area one by one, Ponggol, Tampines, Choa Chu Kang and Jurong West respectively below. Punggol layer
+
+```{r}
+par(mfrow=c(2,2))
+plot(pg, main = "Ponggol")
+```
+
+Tampines layer
+
+```{r}
+plot(tm, main = "Tampines")
+```
+
+Choa Chu Kang layer
+
+```{r}
+plot(ck, main = "Choa Chu Kang")
+```
+
+Jurong West layer
+
+```{r}
+plot(jw, main = "Jurong West")
+```

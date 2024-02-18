@@ -1,0 +1,433 @@
+---
+title: "Take-home Exercise 1 Part 2: Application of Spatial Point Patterns Analysis to discover the geographical distribution of Grab hailing services in Singapore"
+date: "4th February 2024"
+date modified: "last-modified"
+format: 
+  html:
+    fontsize: 18px
+execute:
+  echo: true
+  eval: true
+  freeze: true
+  warning: false
+---
+
+# 4. Deriving Network Kernel Density Estimation (NKDE)
+
+Run these code first to made sure the CRS of punggol and sgroads match in other to extract the punggol area to plot on tmap() later
+
+```{r}
+pacman::p_load(arrow, lubridate, sf, tmap, tidyverse, maptools, sp, raster, spatstat, spNetwork, classInt, viridis, readr)
+```
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial/MPSZ-2019", layer = "MPSZ-2019")
+```
+
+```{r}
+pg <- mpsz %>%
+  filter(PLN_AREA_N == "PUNGGOL")
+tm <- mpsz %>%
+  filter(PLN_AREA_N == "TAMPINES")
+ck <- mpsz %>%
+  filter(PLN_AREA_N == "CHOA CHU KANG")
+jw <- mpsz %>%
+  filter(PLN_AREA_N == "JURONG WEST")
+```
+
+```{r}
+sgroads <- read_rds("data/rds/sgroads.rds")
+```
+
+```{r}
+pg <- st_transform(pg, crs = st_crs(sgroads))
+st_crs(pg)
+```
+
+Extracting punggol out of mpsz using st_intersection() so we can plot on tmap() later
+
+```{r}
+roadspg <- sgroads[st_intersection(sgroads, pg), ]
+plot(st_geometry(roadspg))
+```
+
+Checking the structure of our data
+
+```{r}
+#| eval: false
+str(roadspg)
+```
+
+Extracting punggol area out of grab using st_intersection() so we can plot on tmap() later
+```{r}
+origin_grab <- read_rds("data/rds/origin_grab.rds")
+```
+
+```{r}
+grab_pg <- st_intersection(origin_grab, pg)
+```
+
+Checking the structure of our data again
+
+```{r}
+str(grab_pg)
+```
+
+Plotting Punggol area using grab_pg and roadpg, the intersections extracts Punggol area:
+
+```{r}
+tmap_mode('plot')
+
+tm_shape(grab_pg) + 
+  tm_dots() +
+tm_shape(roadspg) +
+  tm_lines()
+```
+
+Performing the same analysis for tampines like how we did for punggol just now:
+
+```{r}
+tm <- st_transform(tm, crs = st_crs(sgroads))
+st_crs(tm)
+roadstm <- st_intersection(sgroads, tm)
+grab_tm <- st_intersection(origin_grab, tm)
+```
+
+```{r}
+tmap_mode('plot')
+
+tm_shape(grab_tm) + 
+  tm_dots() +
+tm_shape(roadstm) +
+  tm_lines()
+```
+
+## 4.1 Punggol Network Kernel Densty Estimation (NKDE) Analysis
+
+```{r}
+roadspg <- st_cast(roadspg, "LINESTRING")
+```
+```{r}
+lixelspg <- lixelize_lines(roadspg,
+                         750,
+                         mindist = 375)
+```
+
+```{r}
+samplespg <- lines_center(lixelspg)
+```
+
+The densities show high traffic flow in punggol area like shopping malls or heavy human flow area
+
+```{r}
+#| eval: false
+densitiespg <- nkde(roadspg, 
+                  events = grab_pg,
+                  w = rep(1,nrow(grab_pg)),
+                  samples = samplespg,
+                  kernel_name = "quartic",
+                  bw = 300, 
+                  div= "bw", 
+                  method = "simple", 
+                  digits = 1, 
+                  tol = 1,
+                  grid_shape = c(1,1), 
+                  max_depth = 8,
+                  agg = 5, #we aggregate events within a 5m radius (faster calculation)
+                  sparse = TRUE,
+                  verbose = FALSE)
+```
+
+Importing densitiespg due to the large file size
+
+```{r}
+#| eval: false
+write_rds(densitiespg, "data/rds/densitiespg.rds")
+```
+
+```{r}
+densitiespg <- read_rds("data/rds/densitiespg.rds")
+```
+
+```{r}
+samplespg$density <- densitiespg
+lixelspg$density <- densitiespg
+```
+
+```{r}
+samplespg$density <- samplespg$density*1000
+lixelspg$density <- lixelspg$density*1000
+```
+
+```{r}
+tmap_mode('plot')
+
+tm_shape(lixelspg) +
+  tm_lines(col="density") +
+tm_shape(grab_pg) +
+  tm_dots()
+```
+
+## 4.2 Tampines Network Kernel Densty Estimation (NKDE) Analysis
+
+```{r}
+roadstm <- st_collection_extract(roadstm, "LINESTRING")
+roadstm <- st_cast(roadstm, "LINESTRING")
+```
+
+
+```{r}
+lixelstm <- lixelize_lines(roadstm,
+                         750,
+                         mindist = 375)
+```
+
+```{r}
+samplestm <- lines_center(lixelstm)
+```
+
+The densities show high traffic flow in punggol area like shopping malls or heavy human flow area
+
+```{r}
+#| eval: false
+densitiestm <- nkde(roadstm, 
+                  events = grab_tm,
+                  w = rep(1,nrow(grab_tm)),
+                  samples = samplestm,
+                  kernel_name = "quartic",
+                  bw = 300, 
+                  div= "bw", 
+                  method = "simple", 
+                  digits = 1, 
+                  tol = 1,
+                  grid_shape = c(1,1), 
+                  max_depth = 8,
+                  agg = 5, #we aggregate events within a 5m radius (faster calculation)
+                  sparse = TRUE,
+                  verbose = FALSE)
+```
+
+```{r}
+#| eval: false
+write_rds(densitiestm, "data/rds/densitiestm.rds")
+```
+
+```{r}
+densitiestm <- read_rds("data/rds/densitiestm.rds")
+```
+
+```{r}
+samplestm$density <- densitiestm
+lixelstm$density <- densitiestm
+```
+
+```{r}
+samplestm$density <- samplestm$density*1000
+lixelstm$density <- lixelstm$density*1000
+```
+
+```{r}
+tmap_mode('plot')
+
+tm_shape(lixelstm) +
+  tm_lines(col="density") +
+tm_shape(grab_tm) +
+  tm_dots()
+```
+
+# 5. Temporal Network Kernel Density Estimation (TNKDE)
+
+```{r}
+grab_pg$pingtimestamp <- as_datetime(grab_pg$pingtimestamp)
+```
+
+```{r}
+grab_pg <- grab_pg %>%
+  mutate(hrday = hour(pingtimestamp))
+```
+
+## 5.1 Converting the Date field to a numeric field (counting days)
+
+```{r}
+ggplot(grab_pg) + 
+  geom_histogram(aes(x = hrday), bins = 30, color = "white")
+```
+
+```{r}
+grab_pg_tnke <- subset(grab_pg, grab_pg$hrday >= 1)
+```
+
+```{r}
+w <- rep(1,nrow(grab_pg))
+samples <- seq(0, max(grab_pg$hrday), 5)
+
+time_kernel_values <- data.frame(
+  bw_10 = tkde(grab_pg$hrday, w = w, samples = samples, bw = 10, kernel_name = "quartic"),
+  bw_20 = tkde(grab_pg$hrday, w = w, samples = samples, bw = 20, kernel_name = "quartic"),
+  bw_30 = tkde(grab_pg$hrday, w = w, samples = samples, bw = 30, kernel_name = "quartic"),
+  bw_40 = tkde(grab_pg$hrday, w = w, samples = samples, bw = 40, kernel_name = "quartic"),
+  bw_50 = tkde(grab_pg$hrday, w = w, samples = samples, bw = 50, kernel_name = "quartic"),
+  bw_60 = tkde(grab_pg$hrday, w = w, samples = samples, bw = 60, kernel_name = "quartic"),
+  time = samples
+)
+```
+
+```{r}
+df_time <- reshape2::melt(time_kernel_values,id.vars = "time")
+df_time$variable <- as.factor(df_time$variable)
+```
+
+```{r}
+ggplot(data = df_time) + 
+  geom_line(aes(x = time, y = value)) +
+  facet_wrap(vars(variable), ncol=2, scales = "free") + 
+  theme(axis.text = element_text(size = 5))
+```
+
+```{r}
+bw1 <- bw.bcv(grab_pg$hrday, nb = 10, lower = 1, upper = 10)
+bw2 <- bw.ucv(grab_pg$hrday, nb = 10, lower = 1, upper = 10)
+#bw3 <- bw.SJ(grab_pg$hrday, nb = 10, lower = 1, upper = 10)
+
+
+time_kernel_values <- data.frame(
+  bw_bcv = tkde(grab_pg$hrday, w = w, samples = samples, bw = bw1, kernel_name = "quartic"),
+  bw_ucv = tkde(grab_pg$hrday, w = w, samples = samples, bw = bw2, kernel_name = "quartic"),
+  #bw_SJ = tkde(grab_pg$hrday, w = w, samples = samples, bw = bw3, kernel_name = "quartic"),
+  time = samples
+)
+
+df_time <- reshape2::melt(time_kernel_values,id.vars = "time")
+df_time$variable <- as.factor(df_time$variable)
+
+ggplot(data = df_time) + 
+  geom_line(aes(x = time, y = value)) +
+  facet_wrap(vars(variable), ncol=2, scales = "free")  + 
+  theme(axis.text = element_text(size = 5))
+```
+
+Spatial dimension, investigating the spatial dimension.
+
+```{r}
+# loading the road network
+data(roadspg)
+
+tm_shape(roadspg) + 
+  tm_lines(col = "black") + 
+  tm_shape(grab_pg) + 
+  tm_dots(col = "red", size = 0.1)
+```
+
+```{r}
+#| eval: false
+# calculating the densities
+nkde_densitiespg <- nkde(lines = roadspg,
+                       events = grab_pg,
+                       w = rep(1,nrow(grab_pg)),
+                       samples = samplespg,
+                       kernel_name = "quartic",
+                       bw = 450,
+                       adaptive = TRUE, trim_bw = 900,
+                       method = "discontinuous",
+                       div = "bw",
+                       max_depth = 10,
+                       digits = 2, tol = 0.1, agg = 5,
+                       grid_shape = c(1,1),
+                       verbose = FALSE)
+```
+
+```{r}
+#| eval: false
+write_rds(nkde_densitiespg, "data/rds/nkde_densitiespg.rds")
+```
+
+```{r}
+nkde_densitiespg <- read_rds("data/rds/nkde_densitiespg.rds")
+```
+
+```{r}
+samplespg$density <- nkde_densitiespg$k * 1000
+```
+
+```{r}
+tm_shape(samplespg) + 
+  tm_dots(col = "density", style = "kmeans", n = 8, palette = "viridis", size = 0.05) + 
+  tm_layout(legend.outside = TRUE)
+```
+
+```{r}
+# choosing sample in times (every 10 days)
+sample_time <- seq(0, max(grab_pg$hrday), 1)
+
+# calculating densities
+tnkde_densitiespg <- tnkde(lines = roadspg,
+                         events = grab_pg,
+                         time_field = "hrday",
+                         w = rep(1, nrow(grab_pg)), 
+                         samples_loc = samplespg,
+                         samples_time = sample_time, 
+                         kernel_name = "quartic",
+                         bw_net = 1000, bw_time = 2,
+                         adaptive = TRUE,
+                         trim_bw_net = 24,
+                         trim_bw_time = 1,
+                         method = "discontinuous",
+                         div = "bw", max_depth = 10,
+                         digits = 2, tol = 0.01,
+                         agg = 15, grid_shape = c(1, 1), 
+                         verbose = FALSE)
+```
+
+```{r}
+#| eval: false
+write_rds(tnkde_densitiespg, "data/rds/tnkde_densitiespg.rds")
+```
+
+```{r}
+tnkde_densitiespg <- read_rds("data/rds/tnkde_densitiespg.rds")
+```
+
+```{r}
+# creating a color palette for all the densities
+all_densities <- c(tnkde_densitiespg$k)
+color_breaks <- classIntervals(all_densities, n = 10, style = "kmeans")
+
+# generating a map at each sample time
+all_maps <- lapply(1:ncol(tnkde_densitiespg$k), function(i){
+  time <- sample_time[[i]]
+  #date <- as.Date(grab_pg$hrday) + time
+  
+  samplespg$density <- tnkde_densitiespg$k[,i]
+  map1 <- tm_shape(samplespg) + 
+  tm_dots(col = "density", size = 0.01,
+          breaks = color_breaks$brks, palette = plasma(10, direction = -1)) + 
+    tm_layout(legend.show=FALSE, main.title = paste("TNKDE OF GRAB TRIP ORIGINS @ PUNGGOL", time, ":00"), main.title.size = 0.5)
+  return(map1)
+})
+
+# creating a gif with all the maps
+tmap_animation(all_maps, filename = "images/animated_map.gif", 
+               width = 1000, height = 1000, dpi = 300, delay = 50)
+```
+
+```{r}
+knitr::include_graphics("images/animated_map.gif")
+```
+
+#6. Describe the spatial patterns revealed by the kernel density maps.
+
+The KDE maps shows us the high density areas with high grab traffic in Singapore, this can be seen from the high density, this means more grab cars will be cluttered in those areas. We can see this in the context of Punggol (NKDE analysis) such as shopping malls or residential complexes where demand is higher. While in Tampines, higher demand is observed at commercial centers or transportation hubs.
+
+Based on the Network Kernel Density Estimation (NKDE) analysis for both neighborhoods, Tampines have a higher density than Punggol.
+
+By performing Temporal Network Kernel Density Estimation (TNKDE) analysis on Punggol we can see the hour variation of demand we can see it is usually the peak hours when commuters are travelling in the morning, afternoon and at night when getting to work most probably.
+
+While we can see when does grab face demand, another perspective we can consider is that Singaporeans do use grab hailing services heavily as it is the main grab hailing company Singaporeans use (despite having other brands like Gojek, ComfortDelgro). The demand of grab reflects the busy and hustling lifestyle of Singaporeans.
+
+# 7. Learning Points
+
+## 7.1 Solving Coding Issues and Personal Learning Points
+
+While it might sound like a no brainer to seek help and look for other methods when your code isn't working, but when I am too stuck on an issue I will forget to think broader. I believe this take- home ex1 is a good reminder to me that I should look beyond and further than what is displayed in front of me. I believe, this is a good skill that will prepare me to be a better data scientist in the future.
+
+For example, having to load large codes like origin_grab and destination_grab, it was only with Prof's Kam help that I remembered that I can save it as a rds file, and this saves me time and prevent my R from lagging.
