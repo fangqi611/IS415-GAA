@@ -10,6 +10,8 @@ execute:
   eval: true
   freeze: true
   warning: false
+  message: false
+editor: visual
 ---
 
 # 4. Deriving Network Kernel Density Estimation (NKDE)
