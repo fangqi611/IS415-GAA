@@ -172,7 +172,6 @@ tainan
 We are going to describe Tainan's dengue cases so by plotting a choropleth map to see it visually using the code chunk below:
 
 ```{r}
-#check
 tmap_mode("plot")
 tm_shape(tainan) +
 tm_fill(col = "VILLCODE", 
