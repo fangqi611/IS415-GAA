@@ -1,5 +1,7 @@
 ---
 title: "Take-home Exercise 2: Application of Spatial and Spatio-temporal Analysis Methods to Discover the Distribution of Dengue Fever in Tainan City, Taiwan"
+date: "March 3, 2024"
+date-modified: "last-modified"
 format: 
   html:
     fontsize: 18px
@@ -9,6 +11,7 @@ execute:
   freeze: true
   warning: false
   message: false
+  fig_retine: 3
 editor: visual
 ---
 
