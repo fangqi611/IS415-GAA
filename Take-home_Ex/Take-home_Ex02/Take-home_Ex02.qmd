@@ -230,7 +230,7 @@ global_moran_perm(wm_q$VILLCODE,
                   nsim = 99)
 ```
 
-The statistical report above show that the p-value is smaller than alpha value of 0.05.Hence, we have enough statistical evidence to reject the null hypothesis and **accept H1 that the outbreak is indeed spatial and spatio-temporal dependentas the spatial distribution are autocorrelated.**
+The statistical report above show that the p-value is smaller than alpha value of 0.05.Hence, we have enough statistical evidence to reject the null hypothesis and **accept H1 that the outbreak is indeed spatial and spatio-temporal dependent as the spatial distribution are autocorrelated.**
 
 # 3. Peforming Local Spatial Autocorrelation Analysis using sfdep Methods
 
