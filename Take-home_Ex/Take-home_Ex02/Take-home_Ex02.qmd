@@ -663,3 +663,4 @@ Additionally, performing EHSA has provided us insight about the change of the de
 However, this mathematical analysis does not describe the situation and change happening in Tainan, and the scope of study using p_sim is very narrow and does not give us a lot of analysis or insight (after explaining what using p_sim means). While EHSA is able to do this by showing that dengue is spreading to other areas where more dengue cases are forming up North of Tainan.
 
 In conclusion, if we need an overview of the dengue situation, the graph in Section 4.5 is good to get a general idea but the EHSA graph in Section 5.5 is better. It can describe and depict even a broader and more in-depth situation of the change about the dengue situation in Tainan overtime from 31st to 50th week of 2023 in each village.
+
