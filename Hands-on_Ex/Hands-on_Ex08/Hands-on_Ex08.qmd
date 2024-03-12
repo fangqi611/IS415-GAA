@@ -16,16 +16,19 @@ editor: visual
 ---
 
 # Getting Started
+
 ```{r}
 pacman::p_load(olsrr, corrplot, ggpubr, sf, spdep, GWmodel, tmap, tidyverse, gtsummary)
 ```
 
 # 1. Importing geospatial data
+
 ```{r}
 mpsz = st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
 ```
 
 ## 1.2 Updating CRS information
+
 ```{r}
 mpsz_svy21 <- st_transform(mpsz, 3414)
 ```
@@ -33,15 +36,19 @@ mpsz_svy21 <- st_transform(mpsz, 3414)
 ```{r}
 st_crs(mpsz_svy21)
 ```
+
 ```{r}
 st_bbox(mpsz_svy21) #view extent
 ```
 
 ## 1.3 Aspatial Data Wrangling
+
 ### Importing the aspatial data
+
 ```{r}
 condo_resale = read_csv("data/aspatial/Condo_resale_2015.csv")
 ```
+
 ```{r}
 glimpse(condo_resale)
 ```
@@ -59,6 +66,7 @@ summary(condo_resale)
 ```
 
 ### Converting aspatial data frame into a sf object
+
 ```{r}
 condo_resale.sf <- st_as_sf(condo_resale,
                             coords = c("LONGITUDE", "LATITUDE"),
@@ -73,6 +81,7 @@ head(condo_resale.sf)
 # 2. Exploratory Data Analysis (EDA)
 
 ## 2.1 EDA using statistical graphics
+
 ```{r}
 ggplot(data=condo_resale.sf, aes(x=`SELLING_PRICE`)) +
   geom_histogram(bins=20, color="black", fill="light blue")
@@ -89,6 +98,7 @@ ggplot(data=condo_resale.sf, aes(x=`LOG_SELLING_PRICE`)) +
 ```
 
 ## 2.2 Multiple Histogram Plots distribution of variables
+
 ```{r}
 AREA_SQM <- ggplot(data=condo_resale.sf, aes(x= `AREA_SQM`)) + 
   geom_histogram(bins=20, color="black", fill="light blue")
@@ -135,6 +145,7 @@ ggarrange(AREA_SQM, AGE, PROX_CBD, PROX_CHILDCARE, PROX_ELDERLYCARE,
 ```
 
 ## 2.3 Drawing Statistical Point Map
+
 ```{r}
 tmap_mode("view")
 ```
@@ -157,6 +168,7 @@ tmap_mode("plot")
 # 3. Hedonic Pricing Modelling in R
 
 ## 3.1 Simple Linear Regression Method
+
 ```{r}
 condo.slr <- lm(formula=SELLING_PRICE ~ AREA_SQM, data = condo_resale.sf)
 ```
@@ -173,13 +185,14 @@ ggplot(data=condo_resale.sf,
 ```
 
 ## 3.2 Multiple Linear Regression Method
+
 ```{r}
 corrplot(cor(condo_resale[, 5:23]), diag = FALSE, order = "AOE",
          tl.pos = "td", tl.cex = 0.5, method = "number", type = "upper")
 ```
 
-
 ## 3.3 Building a hedonic pricing model using multiple linear regression method
+
 ```{r}
 condo.mlr <- lm(formula = SELLING_PRICE ~ AREA_SQM + AGE    + 
                   PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE +
@@ -192,6 +205,7 @@ summary(condo.mlr)
 ```
 
 ## 3.4 Preparing Publication Quality Table: olsrr method
+
 ```{r}
 condo.mlr1 <- lm(formula = SELLING_PRICE ~ AREA_SQM + AGE + 
                    PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE +
@@ -203,6 +217,7 @@ ols_regress(condo.mlr1)
 ```
 
 ## 3.5 Preparing Publication Quality Table: gtsummary method
+
 ```{r}
 tbl_regression(condo.mlr1, intercept = TRUE)
 ```
@@ -218,16 +233,19 @@ tbl_regression(condo.mlr1,
 ```
 
 ### Checking for multicolinearity
+
 ```{r}
 ols_vif_tol(condo.mlr1)
 ```
 
 ### Test for Non-Linearity
+
 ```{r}
 ols_plot_resid_fit(condo.mlr1)
 ```
 
 ### Test for Normality Assumption
+
 ```{r}
 ols_plot_resid_hist(condo.mlr1)
 ```
@@ -237,6 +255,7 @@ ols_test_normality(condo.mlr1)
 ```
 
 ### Testing for Spatial Autocorrelation
+
 ```{r}
 mlr.output <- as.data.frame(condo.mlr1$residuals)
 ```
@@ -288,6 +307,7 @@ lm.morantest(condo.mlr1, nb_lw)
 # 4. Building Hedonic Pricing Models using GWmodel
 
 ## 4.1 Building Fixed Bandwidth GWR Model
+
 ```{r}
 bw.fixed <- bw.gwr(formula = SELLING_PRICE ~ AREA_SQM + AGE + PROX_CBD + 
                      PROX_CHILDCARE + PROX_ELDERLYCARE  + PROX_URA_GROWTH_AREA + 
@@ -302,6 +322,7 @@ bw.fixed <- bw.gwr(formula = SELLING_PRICE ~ AREA_SQM + AGE + PROX_CBD +
 ```
 
 ### GWModel method - fixed bandwith
+
 ```{r}
 gwr.fixed <- gwr.basic(formula = SELLING_PRICE ~ AREA_SQM + AGE + PROX_CBD + 
                          PROX_CHILDCARE + PROX_ELDERLYCARE  + PROX_URA_GROWTH_AREA + 
@@ -319,6 +340,7 @@ gwr.fixed
 ```
 
 ## 4.2 Building Adaptive Bandwidth GWR Model
+
 ```{r}
 bw.adaptive <- bw.gwr(formula = SELLING_PRICE ~ AREA_SQM + AGE  + 
                         PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE    + 
@@ -333,6 +355,7 @@ bw.adaptive <- bw.gwr(formula = SELLING_PRICE ~ AREA_SQM + AGE  +
 ```
 
 ### Constructing the adaptive bandwidth gwr model
+
 ```{r}
 gwr.adaptive <- gwr.basic(formula = SELLING_PRICE ~ AREA_SQM + AGE + 
                             PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE + 
@@ -350,6 +373,7 @@ gwr.adaptive
 ```
 
 ## 4.3 Visualising GWR Output
+
 In addition to regression residuals, the output feature class table includes fields for observed and predicted y values, condition number (cond), Local R2, residuals, and explanatory variable coefficients and standard errors:
 
 Condition Number: this diagnostic evaluates local collinearity. In the presence of strong local collinearity, results become unstable. Results associated with condition numbers larger than 30, may be unreliable.
@@ -365,6 +389,7 @@ Coefficient Standard Error: these values measure the reliability of each coeffic
 They are all stored in a SpatialPointsDataFrame or SpatialPolygonsDataFrame object integrated with fit.points, GWR coefficient estimates, y value, predicted values, coefficient standard errors and t-values in its “data” slot in an object called SDF of the output list.
 
 ## 4.4 Converting SDF into sf data.frame
+
 ```{r}
 condo_resale.sf.adaptive <- st_as_sf(gwr.adaptive$SDF) %>%
   st_transform(crs=3414)
@@ -389,6 +414,7 @@ summary(gwr.adaptive$SDF$yhat)
 ```
 
 ## 4.5 Visualising local R2
+
 ```{r}
 tmap_mode("view")
 tm_shape(mpsz_svy21)+
@@ -401,6 +427,7 @@ tm_shape(condo_resale.sf.adaptive) +
 ```
 
 ## 4.6 Visualising coefficient estimates
+
 ```{r}
 tmap_mode("view")
 AREA_SQM_SE <- tm_shape(mpsz_svy21)+
@@ -425,6 +452,7 @@ tmap_arrange(AREA_SQM_SE, AREA_SQM_TV,
 ```
 
 ### By URA Plannign Region
+
 ```{r}
 tm_shape(mpsz_svy21[mpsz_svy21$REGION_N=="CENTRAL REGION", ])+
   tm_polygons()+
@@ -434,34 +462,3 @@ tm_shape(condo_resale.sf.adaptive) +
            border.col = "gray60",
            border.lwd = 1)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
