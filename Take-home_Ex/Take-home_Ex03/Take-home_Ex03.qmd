@@ -1,0 +1,18 @@
+---
+title: "Take-Home Exercise 3: Hong Kong GREEN@ Recyclable Collection Points Spatial Point Patterns Analysis"
+date: "March 13, 2024"
+date-modified: "last-modified"
+format: 
+  html:
+    fontsize: 18px
+execute:
+  echo: true
+  eval: true
+  freeze: true
+  warning: false
+  message: false
+  fig_retine: 3
+editor: visual
+---
+
+
