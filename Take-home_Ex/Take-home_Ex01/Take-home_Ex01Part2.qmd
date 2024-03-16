@@ -61,6 +61,7 @@ str(roadspg)
 ```
 
 Extracting punggol area out of grab using st_intersection() so we can plot on tmap() later
+
 ```{r}
 origin_grab <- read_rds("data/rds/origin_grab.rds")
 ```
@@ -109,6 +110,7 @@ tm_shape(roadstm) +
 ```{r}
 roadspg <- st_cast(roadspg, "LINESTRING")
 ```
+
 ```{r}
 lixelspg <- lixelize_lines(roadspg,
                          750,
@@ -176,7 +178,6 @@ tm_shape(grab_pg) +
 roadstm <- st_collection_extract(roadstm, "LINESTRING")
 roadstm <- st_cast(roadstm, "LINESTRING")
 ```
-
 
 ```{r}
 lixelstm <- lixelize_lines(roadstm,
