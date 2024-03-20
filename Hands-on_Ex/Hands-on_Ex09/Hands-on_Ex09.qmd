@@ -1,5 +1,18 @@
 ---
 title: "Hands-on Ex09: Geographically Weighted Predictive Models"
+date: "March 17, 2024"
+date-modified: "last-modified"
+format: 
+  html:
+    fontsize: 18px
+execute:
+  echo: true
+  eval: true
+  freeze: true
+  warning: false
+  message: false
+  fig_retine: 3
+editor: visual
 ---
 # 1. Installing and Loading R packages
 ```{r}
