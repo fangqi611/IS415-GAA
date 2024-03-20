@@ -346,6 +346,7 @@ rs_grf <- read_rds("data/models/rs_grf.rds")
 ```
 
 ```{r}
+#| eval: false
 test_df <- cbind(test_sf, coords_test) %>%
   st_drop_geometry()
 ```
