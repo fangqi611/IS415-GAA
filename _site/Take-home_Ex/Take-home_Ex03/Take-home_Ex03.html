@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-13">
+<meta name="dcterms.date" content="2024-03-24">
 
-<title>IS415-GAA - Take-Home Exercise 3: Hong Kong GREEN@ Recyclable Collection Points Spatial Point Patterns Analysis</title>
+<title>IS415-GAA - Analysing the Recycling Stations in Hong Kong using Exploratory Data Analysis (EDA) &amp; Second Point Spatial Analysis</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -109,7 +143,7 @@ ul.task-list li input[type="checkbox"] {
   </li>  
         <li>
     <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05_Local.html" rel="" target="">
- <span class="dropdown-text">Hands-on Exercise 5:Local</span></a>
+ <span class="dropdown-text">Hands-on Exercise 5: Local</span></a>
   </li>  
         <li>
     <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html" rel="" target="">
@@ -118,6 +152,14 @@ ul.task-list li input[type="checkbox"] {
         <li>
     <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex08/Hands-on_Ex08.html" rel="" target="">
  <span class="dropdown-text">Hands-on Exercise 8</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex09/Hands-on_Ex09.html" rel="" target="">
+ <span class="dropdown-text">Hands-on Exercise 9</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex10/Hands-on_Ex10.html" rel="" target="">
+ <span class="dropdown-text">Hands-on Exercise 10</span></a>
   </li>  
     </ul>
   </li>
@@ -153,6 +195,10 @@ ul.task-list li input[type="checkbox"] {
         <li>
     <a class="dropdown-item" href="../../In-class_Ex/In-Class_Ex08/In-Class_Ex08.html" rel="" target="">
  <span class="dropdown-text">In-class Exercise 8</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-Class_Ex09/In-Class_Ex09.html" rel="" target="">
+ <span class="dropdown-text">In-class Exercise 9</span></a>
   </li>  
     </ul>
   </li>
@@ -201,14 +247,56 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#home-page" id="toc-home-page" class="nav-link active" data-scroll-target="#home-page">Home Page</a>
+  <ul class="collapse">
+  <li><a href="#visualization-page" id="toc-visualization-page" class="nav-link" data-scroll-target="#visualization-page">Visualization Page</a></li>
+  <li><a href="#analysis-pages-spaa-netspaa" id="toc-analysis-pages-spaa-netspaa" class="nav-link" data-scroll-target="#analysis-pages-spaa-netspaa">Analysis Pages: SPAA &amp; NETSPAA</a></li>
+  </ul></li>
+  <li><a href="#loading-the-data" id="toc-loading-the-data" class="nav-link" data-scroll-target="#loading-the-data">1. Loading the Data</a></li>
+  <li><a href="#importing-the-data" id="toc-importing-the-data" class="nav-link" data-scroll-target="#importing-the-data">2. Importing the Data</a></li>
+  <li><a href="#plotting-out-the-datasets" id="toc-plotting-out-the-datasets" class="nav-link" data-scroll-target="#plotting-out-the-datasets">3. Plotting out the datasets</a></li>
+  <li><a href="#owin-object" id="toc-owin-object" class="nav-link" data-scroll-target="#owin-object">4. Owin Object</a>
+  <ul class="collapse">
+  <li><a href="#creating-owin-object-for-yau-ma-tei" id="toc-creating-owin-object-for-yau-ma-tei" class="nav-link" data-scroll-target="#creating-owin-object-for-yau-ma-tei">4.1 Creating Owin Object for Yau Ma Tei</a></li>
+  <li><a href="#hk_cp_ppp" id="toc-hk_cp_ppp" class="nav-link" data-scroll-target="#hk_cp_ppp">4.2 HK_CP_PPP</a></li>
+  </ul></li>
+  <li><a href="#second-point-spatial-analysis" id="toc-second-point-spatial-analysis" class="nav-link" data-scroll-target="#second-point-spatial-analysis">5. Second Point Spatial Analysis</a>
+  <ul class="collapse">
+  <li><a href="#analysing-spatial-point-process-using-g-function" id="toc-analysing-spatial-point-process-using-g-function" class="nav-link" data-scroll-target="#analysing-spatial-point-process-using-g-function">5.1 Analysing Spatial Point Process Using G-Function</a>
+  <ul class="collapse">
+  <li><a href="#computing-g-function-estimation" id="toc-computing-g-function-estimation" class="nav-link" data-scroll-target="#computing-g-function-estimation">5.1.1 Computing G-function Estimation</a></li>
+  <li><a href="#performing-complete-spatial-randomness-test" id="toc-performing-complete-spatial-randomness-test" class="nav-link" data-scroll-target="#performing-complete-spatial-randomness-test">5.1.2 Performing Complete Spatial Randomness Test</a></li>
+  </ul></li>
+  <li><a href="#analysing-spatial-point-process-using-f-function" id="toc-analysing-spatial-point-process-using-f-function" class="nav-link" data-scroll-target="#analysing-spatial-point-process-using-f-function">5.2 Analysing Spatial Point Process Using F-Function</a>
+  <ul class="collapse">
+  <li><a href="#computing-f-function-estimation" id="toc-computing-f-function-estimation" class="nav-link" data-scroll-target="#computing-f-function-estimation">5.2.1 Computing F-function estimation</a></li>
+  <li><a href="#performing-complete-spatial-randomness-test-1" id="toc-performing-complete-spatial-randomness-test-1" class="nav-link" data-scroll-target="#performing-complete-spatial-randomness-test-1">5.2.2 Performing Complete Spatial Randomness Test</a></li>
+  </ul></li>
+  <li><a href="#analysing-spatial-point-process-using-k-function" id="toc-analysing-spatial-point-process-using-k-function" class="nav-link" data-scroll-target="#analysing-spatial-point-process-using-k-function">5.3 Analysing Spatial Point Process Using K-Function</a>
+  <ul class="collapse">
+  <li><a href="#computing-k-function-estimate" id="toc-computing-k-function-estimate" class="nav-link" data-scroll-target="#computing-k-function-estimate">5.3.1 Computing K-function estimate</a></li>
+  <li><a href="#performing-complete-spatial-randomness-test-2" id="toc-performing-complete-spatial-randomness-test-2" class="nav-link" data-scroll-target="#performing-complete-spatial-randomness-test-2">5.3.2 Performing Complete Spatial Randomness Test</a></li>
+  </ul></li>
+  <li><a href="#analysing-spatial-point-process-using-l-function" id="toc-analysing-spatial-point-process-using-l-function" class="nav-link" data-scroll-target="#analysing-spatial-point-process-using-l-function">5.4 Analysing Spatial Point Process Using L-Function</a>
+  <ul class="collapse">
+  <li><a href="#computing-l-function-estimation" id="toc-computing-l-function-estimation" class="nav-link" data-scroll-target="#computing-l-function-estimation">5.4.1 Computing L-function estimation</a></li>
+  <li><a href="#performing-complete-spatial-randomness-test-3" id="toc-performing-complete-spatial-randomness-test-3" class="nav-link" data-scroll-target="#performing-complete-spatial-randomness-test-3">5.4.2 Performing Complete Spatial Randomness Test</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#observations-concluded" id="toc-observations-concluded" class="nav-link" data-scroll-target="#observations-concluded">6. Observations Concluded</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Take-Home Exercise 3: Hong Kong GREEN@ Recyclable Collection Points Spatial Point Patterns Analysis</h1>
+<h1 class="title">Analysing the Recycling Stations in Hong Kong using Exploratory Data Analysis (EDA) &amp; Second Point Spatial Analysis</h1>
 </div>
 
 
@@ -219,14 +307,14 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 13, 2024</p>
+      <p class="date">March 24, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">March 13, 2024</p>
+      <p class="date-modified">March 24, 2024</p>
     </div>
   </div>
     
@@ -235,8 +323,1869 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
+<section id="home-page" class="level1">
+<h1>Home Page</h1>
+<p><img src="images/clipboard-3889418583.png" class="img-fluid"></p>
+<section id="visualization-page" class="level3">
+<h3 class="anchored" data-anchor-id="visualization-page">Visualization Page</h3>
+<p>This will be the Visualization Tab where users are able to have idea of the locations of Green@Community recycling points. We have include some interaction features such as drop-down menu for them to select their desirable districts and recyclables that they want to recycle.</p>
+<p><img src="images/clipboard-690793078.png" class="img-fluid"></p>
+</section>
+<section id="analysis-pages-spaa-netspaa" class="level2">
+<h2 class="anchored" data-anchor-id="analysis-pages-spaa-netspaa">Analysis Pages: SPAA &amp; NETSPAA</h2>
+<p>The following 2 pages also include interactive feature such as drop-down menu for the districts that we do our analysis on.</p>
+<p><img src="images/clipboard-805621792.png" class="img-fluid"></p>
+<p><img src="images/clipboard-2302619658.png" class="img-fluid"></p>
+</section>
+</section>
+<section id="loading-the-data" class="level1">
+<h1>1. Loading the Data</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(arrow, lubridate, maptools, sp, sf, raster, spatstat, tmap, classInt, viridis, tidyverse, spNetwork, readxl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="importing-the-data" class="level1">
+<h1>2. Importing the Data</h1>
+<p>This aspatial dataset is the 2021 Population Census Statistics (By District Council District) in Hong Kong, taken from “https://data.gov.hk/en-data/dataset/hk-censtatd-census_geo-2021-population-census-by-dcd/resource/27beef7f-5995-4b79-b3a9-26352c852fda”. This dataset provides information recorded about the population of Hong Kong, state, city, or other well-defined geographical areas</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hk_census <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"data/aspatial/hkcensus.xlsx"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This second aspatial dataset is the Waste Less Recycling Collection Point (By Environmental Protection Department). It is from “https://data.gov.hk/en-data/dataset/hk-epd-recycteam-waste-less-recyclable-collection-points-data”.</p>
+<p>We will be using this dataset heavily to study the recycling points in Hong Kong, understanding how dispersed or clustered the recycling stations are in Hong Kong.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cp <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/hkrecyclepoints.csv"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We are going to group the cp dataset by the legend as there are various different kinds of recycling stations, by grouping them into the type of recycling stations we can make more meaningful analysis about the recycling stations around Hong Kong and how the location of these recycling stations might be too clustered in one area and certain areas need more or less recycling stations.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>cp <span class="ot">&lt;-</span> cp <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(legend)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We are changing the coordinate system of cp dataset so that we can project the points on the graph later, we will convert it to WGS84 then Hong Kong coordinate system (2326)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>cp_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(cp, </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"lgt"</span>,<span class="st">"lat"</span>), </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">crs =</span> <span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs=</span><span class="dv">2326</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>cp_sf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 6520 features and 6 fields
+Geometry type: POINT
+Dimension:     XY
+Bounding box:  xmin: 802869.2 ymin: 806784.4 xmax: 863930.7 ymax: 846323
+Projected CRS: Hong Kong 1980 Grid System
+# A tibble: 6,520 × 7
+# Groups:   legend [8]
+   cp_id district_id address_en                    address2_en waste_type legend
+ * &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;                         &lt;chr&gt;       &lt;chr&gt;      &lt;chr&gt; 
+ 1   283 Kwai_Tsing  Kwai Hing Road near Kwai Hin… &lt;NA&gt;        Metals,Ot… Recyc…
+ 2   286 Kwai_Tsing  Wing Shun Street near Tsuen … &lt;NA&gt;        Metals,Ot… Recyc…
+ 3   288 Kwai_Tsing  Tai Wong Ha Resite Village R… &lt;NA&gt;        Metals,Ot… Recyc…
+ 4   289 Kwai_Tsing  Chung Mei Lo Uk Village RCP   &lt;NA&gt;        Glass Bot… Recyc…
+ 5   293 Kwai_Tsing  Entrance to Tsing Fai San Ts… &lt;NA&gt;        Glass Bot… Recyc…
+ 6   294 Kwai_Tsing  Kwai Shun Street RCP, near K… &lt;NA&gt;        Metals,Ot… Recyc…
+ 7   295 Kwai_Tsing  Wing Kin Road RCP, No.14 Win… &lt;NA&gt;        Metals,Ot… Recyc…
+ 8   296 Kwai_Tsing  Hing Shing Road RCP, No. 82 … &lt;NA&gt;        Metals,Ot… Recyc…
+ 9   297 Kwai_Tsing  Tai Yuen Street RCP, near th… &lt;NA&gt;        Metals,Ot… Recyc…
+10   298 Kwai_Tsing  Pavement outside No. 3 Kin C… &lt;NA&gt;        Metals,Ot… Recyc…
+# ℹ 6,510 more rows
+# ℹ 1 more variable: geometry &lt;POINT [m]&gt;</code></pre>
+</div>
+</div>
+<p>This dataset, district_18 dataset which is the Land area, mid-year population and population density (By District Council district) from “https://portal.csdi.gov.hk/geoportal/#metadataInfoPanel”.</p>
+<p>We will be using this dataset to reflect the recycling points in Hong Kong as it is clearer and provides us more meaningful insight.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>district_18 <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial/hk_18Districts/"</span>,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">layer =</span> <span class="st">"HKDistrict18"</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `HKDistrict18' from data source 
+  `/Users/fangqilim/fangqi611/IS415-GAA/Take-home_Ex/Take-home_Ex03/data/geospatial/hk_18Districts' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 18 features and 4 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 12672060 ymin: 2529946 xmax: 12739620 ymax: 2579129
+Projected CRS: WGS 84 / Pseudo-Mercator</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>district_18</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 18 features and 4 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 12672060 ymin: 2529946 xmax: 12739620 ymax: 2579129
+Projected CRS: WGS 84 / Pseudo-Mercator
+First 10 features:
+   ID    CNAME  CNAME_S             ENAME                       geometry
+1   1 黃大仙區 黄大仙区      WONG TAI SIN MULTIPOLYGON (((12710395 25...
+2   6 九龍城區 九龙城区      KOWLOON CITY MULTIPOLYGON (((12710126 25...
+3   7   觀塘區   观塘区         KWUN TONG MULTIPOLYGON (((12717552 25...
+4   8   西貢區   西贡区          SAI KUNG MULTIPOLYGON (((12715037 25...
+5  11     北區     北区             NORTH MULTIPOLYGON (((12727798 25...
+6  13   中西區   中西区 CENTRAL &amp; WESTERN MULTIPOLYGON (((12706632 25...
+7  14   灣仔區   湾仔区          WAN CHAI MULTIPOLYGON (((12712699 25...
+8  15     東區     东区           EASTERN MULTIPOLYGON (((12717960 25...
+9  17   屯門區   屯门区          TUEN MUN MULTIPOLYGON (((12683459 25...
+10 18   元朗區   元朗区         YUEN LONG MULTIPOLYGON (((12683556 25...</code></pre>
+</div>
+</div>
+<p>We need to transform the coordinate system to Hong Kong’s one in order to reflect the points on it later.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>district_18 <span class="ot">&lt;-</span> district_18 <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">2326</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>district_18</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 18 features and 4 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 801026 ymin: 801678 xmax: 863539.9 ymax: 846903.1
+Projected CRS: Hong Kong 1980 Grid System
+First 10 features:
+   ID    CNAME  CNAME_S             ENAME                       geometry
+1   1 黃大仙區 黄大仙区      WONG TAI SIN MULTIPOLYGON (((836530.5 82...
+2   6 九龍城區 九龙城区      KOWLOON CITY MULTIPOLYGON (((836281 8233...
+3   7   觀塘區   观塘区         KWUN TONG MULTIPOLYGON (((843155.9 81...
+4   8   西貢區   西贡区          SAI KUNG MULTIPOLYGON (((840825.4 82...
+5  11     北區     北区             NORTH MULTIPOLYGON (((852615.5 84...
+6  13   中西區   中西区 CENTRAL &amp; WESTERN MULTIPOLYGON (((833047.3 81...
+7  14   灣仔區   湾仔区          WAN CHAI MULTIPOLYGON (((838663.3 81...
+8  15     東區     东区           EASTERN MULTIPOLYGON (((843535.7 81...
+9  17   屯門區   屯门区          TUEN MUN MULTIPOLYGON (((811619.1 83...
+10 18   元朗區   元朗区         YUEN LONG MULTIPOLYGON (((811708.8 83...</code></pre>
+</div>
+</div>
+<p>We have also included yaumatei geographical dataset because certain analysis we will be making later is unable to take in the whole geographic location of Hong Kong but a certain district, as such we chose Yau Ma Tei. This dataset is taken from “https://www.ozp.tpb.gov.hk/” where you can extract certain geographical outlines/boundaries of the area of Hong Kong you are interested in.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>yaumatei <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial/yaumatei"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Multiple layers are present in data source /Users/fangqilim/fangqi611/IS415-GAA/Take-home_Ex/Take-home_Ex03/data/geospatial/yaumatei, reading layer `AMENDMENT_ITEM'.
+Use `st_layers' to list all layer names and their type in a data source.
+Set the `layer' argument in `st_read' to read a particular layer.
+Reading layer `AMENDMENT_ITEM' from data source 
+  `/Users/fangqilim/fangqi611/IS415-GAA/Take-home_Ex/Take-home_Ex03/data/geospatial/yaumatei' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 3 features and 4 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 835081.2 ymin: 818489.8 xmax: 835826.2 ymax: 819609.9
+Projected CRS: Hong Kong 1980 Grid System</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(yaumatei)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Coordinate Reference System:
+  User input: Hong Kong 1980 Grid System 
+  wkt:
+PROJCRS["Hong Kong 1980 Grid System",
+    BASEGEOGCRS["Hong Kong 1980",
+        DATUM["Hong Kong 1980",
+            ELLIPSOID["International 1924",6378388,297,
+                LENGTHUNIT["metre",1]]],
+        PRIMEM["Greenwich",0,
+            ANGLEUNIT["degree",0.0174532925199433]],
+        ID["EPSG",4611]],
+    CONVERSION["Hong Kong 1980 Grid",
+        METHOD["Transverse Mercator",
+            ID["EPSG",9807]],
+        PARAMETER["Latitude of natural origin",22.3121333333333,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8801]],
+        PARAMETER["Longitude of natural origin",114.178555555556,
+            ANGLEUNIT["degree",0.0174532925199433],
+            ID["EPSG",8802]],
+        PARAMETER["Scale factor at natural origin",1,
+            SCALEUNIT["unity",1],
+            ID["EPSG",8805]],
+        PARAMETER["False easting",836694.05,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8806]],
+        PARAMETER["False northing",819069.8,
+            LENGTHUNIT["metre",1],
+            ID["EPSG",8807]]],
+    CS[Cartesian,2],
+        AXIS["northing (N)",north,
+            ORDER[1],
+            LENGTHUNIT["metre",1]],
+        AXIS["easting (E)",east,
+            ORDER[2],
+            LENGTHUNIT["metre",1]],
+    USAGE[
+        SCOPE["Cadastre, engineering survey, topographic mapping (large scale)."],
+        AREA["China - Hong Kong - onshore and offshore."],
+        BBOX[22.13,113.76,22.58,114.51]],
+    ID["EPSG",2326]]</code></pre>
+</div>
+</div>
+</section>
+<section id="plotting-out-the-datasets" class="level1">
+<h1>3. Plotting out the datasets</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(district_18))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>cp_sf <span class="ot">&lt;-</span> cp_sf <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_union</span>() </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(cp_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>yaumatei_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(yaumatei, </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"Shape_Leng"</span>,<span class="st">"Shape_Area"</span>), </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">crs =</span> <span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs=</span><span class="dv">2326</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>yaumatei_sf <span class="ot">&lt;-</span> yaumatei_sf <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_union</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(yaumatei_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Recycling points scattered around HK:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">'plot'</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(cp_sf)<span class="sc">+</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="owin-object" class="level1">
+<h1>4. Owin Object</h1>
+<p>Creating Owin Object for the 18 districts in Hong Kong.</p>
+<p>Converting sf format for district_18 into spatial class the sp format because you cannot do it directly.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>district_18_sp <span class="ot">&lt;-</span> <span class="fu">as_Spatial</span>(district_18)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Spatstat requires the analytical data to be in ppp object form, but since there is no way to directly convert a Spatial* classes into ppp object, we’ll need to convert the Spatial* classes into a generic Spatial object first, then convert the generic sp object into ppp object form.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>district_18_sp <span class="ot">&lt;-</span> <span class="fu">as</span>(district_18_sp, <span class="st">"SpatialPolygons"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Checking the newly-converted Spatial classes</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>district_18_sp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>class       : SpatialPolygons 
+features    : 18 
+extent      : 801026, 863539.9, 801678, 846903.1  (xmin, xmax, ymin, ymax)
+crs         : +proj=tmerc +lat_0=22.3121333333333 +lon_0=114.178555555556 +k=1 +x_0=836694.05 +y_0=819069.8 +ellps=intl +towgs84=-162.619,-276.959,-161.764,0.067753,-2.243648,-1.158828,-1.094246 +units=m +no_defs </code></pre>
+</div>
+</div>
+<p>We are now confining the analysis with a geographical area. In spatstat, the object called owin is specially designed to represent this polygonal region. This produces the Hong Kong layer of the 18 districts.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>district_18_owin <span class="ot">&lt;-</span> <span class="fu">as</span>(district_18_sp, <span class="st">"owin"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(district_18_owin)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(district_18_owin)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Window: polygonal boundary
+554 separate polygons (11 holes)
+                   vertices         area relative.area
+polygon 1              1653  9.30390e+06      8.40e-03
+polygon 2              1035  1.02618e+07      9.26e-03
+polygon 3 (hole)         17 -1.89507e+05     -1.71e-04
+polygon 4                21  5.51970e+03      4.98e-06
+polygon 5                22  8.11389e+03      7.33e-06
+polygon 6              2281  1.12610e+07      1.02e-02
+polygon 7             14565  1.19648e+08      1.08e-01
+polygon 8 (hole)          4 -2.02333e-03     -1.83e-12
+polygon 9 (hole)          3 -3.84756e-03     -3.47e-12
+polygon 10 (hole)         3 -9.53691e+00     -8.61e-09
+polygon 11              914  6.65728e+06      6.01e-03
+polygon 12              681  2.42108e+06      2.19e-03
+polygon 13              283  1.84390e+06      1.66e-03
+polygon 14              251  1.04012e+06      9.39e-04
+polygon 15              335  8.15906e+05      7.37e-04
+polygon 16              350  6.75189e+05      6.10e-04
+polygon 17              751  6.09908e+05      5.51e-04
+polygon 18              190  5.72158e+05      5.17e-04
+polygon 19              161  5.43459e+05      4.91e-04
+polygon 20              226  2.42048e+05      2.19e-04
+polygon 21              238  2.14498e+05      1.94e-04
+polygon 22              228  1.98823e+05      1.79e-04
+polygon 23              103  1.00302e+05      9.06e-05
+polygon 24               52  9.16507e+04      8.27e-05
+polygon 25               50  7.26151e+04      6.56e-05
+polygon 26               49  6.85844e+04      6.19e-05
+polygon 27               35  5.70831e+04      5.15e-05
+polygon 28               31  2.98409e+04      2.69e-05
+polygon 29               21  2.72311e+04      2.46e-05
+polygon 30               15  2.57311e+04      2.32e-05
+polygon 31               37  2.14632e+04      1.94e-05
+polygon 32               25  2.13912e+04      1.93e-05
+polygon 33               15  1.78152e+04      1.61e-05
+polygon 34               25  1.76358e+04      1.59e-05
+polygon 35               13  1.76280e+04      1.59e-05
+polygon 36               33  1.65082e+04      1.49e-05
+polygon 37               21  1.61594e+04      1.46e-05
+polygon 38               17  1.48243e+04      1.34e-05
+polygon 39               28  1.33689e+04      1.21e-05
+polygon 40               18  1.24433e+04      1.12e-05
+polygon 41               27  1.22580e+04      1.11e-05
+polygon 42               12  1.06972e+04      9.66e-06
+polygon 43               22  1.05199e+04      9.50e-06
+polygon 44               23  9.88005e+03      8.92e-06
+polygon 45               14  9.78713e+03      8.84e-06
+polygon 46               27  9.29305e+03      8.39e-06
+polygon 47               31  8.32187e+03      7.51e-06
+polygon 48               10  8.17340e+03      7.38e-06
+polygon 49               22  7.96080e+03      7.19e-06
+polygon 50               22  7.48067e+03      6.75e-06
+polygon 51              258  7.46966e+03      6.74e-06
+polygon 52               36  7.31757e+03      6.61e-06
+polygon 53               63  6.86298e+03      6.20e-06
+polygon 54               14  6.79886e+03      6.14e-06
+polygon 55               16  6.59734e+03      5.96e-06
+polygon 56               14  6.09227e+03      5.50e-06
+polygon 57               16  6.05289e+03      5.46e-06
+polygon 58               19  5.91849e+03      5.34e-06
+polygon 59               20  5.80315e+03      5.24e-06
+polygon 60               10  5.76542e+03      5.21e-06
+polygon 61               13  5.55603e+03      5.02e-06
+polygon 62               17  5.45400e+03      4.92e-06
+polygon 63               19  5.10436e+03      4.61e-06
+polygon 64               23  4.78752e+03      4.32e-06
+polygon 65                7  4.70569e+03      4.25e-06
+polygon 66                8  4.66310e+03      4.21e-06
+polygon 67                9  4.59885e+03      4.15e-06
+polygon 68               20  4.38585e+03      3.96e-06
+polygon 69              144  4.37373e+03      3.95e-06
+polygon 70               18  4.29198e+03      3.87e-06
+polygon 71               47  4.07152e+03      3.68e-06
+polygon 72               14  4.06044e+03      3.67e-06
+polygon 73               14  3.54017e+03      3.20e-06
+polygon 74               17  3.37193e+03      3.04e-06
+polygon 75               17  3.36321e+03      3.04e-06
+polygon 76               13  3.28640e+03      2.97e-06
+polygon 77               26  2.99428e+03      2.70e-06
+polygon 78               11  2.88910e+03      2.61e-06
+polygon 79               10  2.86533e+03      2.59e-06
+polygon 80               11  2.79032e+03      2.52e-06
+polygon 81               14  2.79027e+03      2.52e-06
+polygon 82               11  2.58161e+03      2.33e-06
+polygon 83               13  2.42729e+03      2.19e-06
+polygon 84               15  2.30830e+03      2.08e-06
+polygon 85                7  2.21865e+03      2.00e-06
+polygon 86               13  2.17568e+03      1.96e-06
+polygon 87               36  2.06855e+03      1.87e-06
+polygon 88               18  2.06576e+03      1.86e-06
+polygon 89               10  2.01797e+03      1.82e-06
+polygon 90               22  1.85440e+03      1.67e-06
+polygon 91               17  1.82593e+03      1.65e-06
+polygon 92               10  1.70842e+03      1.54e-06
+polygon 93                8  1.65603e+03      1.50e-06
+polygon 94                9  1.53969e+03      1.39e-06
+polygon 95               24  1.51936e+03      1.37e-06
+polygon 96                9  1.51913e+03      1.37e-06
+polygon 97                8  1.48111e+03      1.34e-06
+polygon 98                7  1.43802e+03      1.30e-06
+polygon 99               20  1.42144e+03      1.28e-06
+polygon 100              10  1.31353e+03      1.19e-06
+polygon 101              10  1.29414e+03      1.17e-06
+polygon 102              10  1.22518e+03      1.11e-06
+polygon 103               6  1.15196e+03      1.04e-06
+polygon 104              17  1.03438e+03      9.34e-07
+polygon 105               6  1.02963e+03      9.30e-07
+polygon 106              15  1.00775e+03      9.10e-07
+polygon 107               8  1.00217e+03      9.05e-07
+polygon 108               5  9.70507e+02      8.76e-07
+polygon 109               5  9.30361e+02      8.40e-07
+polygon 110               9  8.92773e+02      8.06e-07
+polygon 111               8  8.90735e+02      8.04e-07
+polygon 112               7  8.88789e+02      8.02e-07
+polygon 113              16  8.53169e+02      7.70e-07
+polygon 114               6  8.28719e+02      7.48e-07
+polygon 115               5  8.09244e+02      7.31e-07
+polygon 116               7  7.35780e+02      6.64e-07
+polygon 117               8  7.28463e+02      6.58e-07
+polygon 118              10  7.28056e+02      6.57e-07
+polygon 119              11  7.27486e+02      6.57e-07
+polygon 120              12  6.80896e+02      6.15e-07
+polygon 121               5  6.80380e+02      6.14e-07
+polygon 122               7  6.75760e+02      6.10e-07
+polygon 123               7  6.70564e+02      6.05e-07
+polygon 124              11  6.64727e+02      6.00e-07
+polygon 125               7  6.45937e+02      5.83e-07
+polygon 126               7  6.42090e+02      5.80e-07
+polygon 127               9  6.29087e+02      5.68e-07
+polygon 128               8  6.10429e+02      5.51e-07
+polygon 129               7  5.69663e+02      5.14e-07
+polygon 130               5  5.67623e+02      5.12e-07
+polygon 131               5  5.45507e+02      4.92e-07
+polygon 132               7  5.40773e+02      4.88e-07
+polygon 133               5  5.40584e+02      4.88e-07
+polygon 134              14  5.26188e+02      4.75e-07
+polygon 135               7  5.24684e+02      4.74e-07
+polygon 136               6  5.19102e+02      4.69e-07
+polygon 137               5  4.96687e+02      4.48e-07
+polygon 138               5  4.73610e+02      4.28e-07
+polygon 139               9  4.56890e+02      4.12e-07
+polygon 140               6  4.49927e+02      4.06e-07
+polygon 141               6  4.49210e+02      4.06e-07
+polygon 142               6  4.42876e+02      4.00e-07
+polygon 143               8  4.18865e+02      3.78e-07
+polygon 144              13  3.96399e+02      3.58e-07
+polygon 145               5  3.76957e+02      3.40e-07
+polygon 146              20  3.75857e+02      3.39e-07
+polygon 147              18  3.71329e+02      3.35e-07
+polygon 148               5  3.59000e+02      3.24e-07
+polygon 149               6  3.45591e+02      3.12e-07
+polygon 150              14  3.38146e+02      3.05e-07
+polygon 151              17  3.21311e+02      2.90e-07
+polygon 152               9  3.18857e+02      2.88e-07
+polygon 153               6  3.17341e+02      2.86e-07
+polygon 154               5  3.14077e+02      2.84e-07
+polygon 155               4  3.07705e+02      2.78e-07
+polygon 156               5  3.02070e+02      2.73e-07
+polygon 157               4  2.82485e+02      2.55e-07
+polygon 158               7  2.78694e+02      2.52e-07
+polygon 159               4  2.75537e+02      2.49e-07
+polygon 160              18  2.72295e+02      2.46e-07
+polygon 161               4  2.57795e+02      2.33e-07
+polygon 162               4  2.47313e+02      2.23e-07
+polygon 163               4  2.45901e+02      2.22e-07
+polygon 164              14  2.45663e+02      2.22e-07
+polygon 165               4  2.28141e+02      2.06e-07
+polygon 166              16  2.16388e+02      1.95e-07
+polygon 167              13  2.01130e+02      1.82e-07
+polygon 168              13  1.94575e+02      1.76e-07
+polygon 169               4  1.92289e+02      1.74e-07
+polygon 170               6  1.89463e+02      1.71e-07
+polygon 171              20  1.89375e+02      1.71e-07
+polygon 172              11  1.87112e+02      1.69e-07
+polygon 173               4  1.82078e+02      1.64e-07
+polygon 174               5  1.67804e+02      1.51e-07
+polygon 175               8  1.61918e+02      1.46e-07
+polygon 176               4  1.61439e+02      1.46e-07
+polygon 177              12  1.47062e+02      1.33e-07
+polygon 178               9  1.45521e+02      1.31e-07
+polygon 179               9  1.43545e+02      1.30e-07
+polygon 180              17  1.34987e+02      1.22e-07
+polygon 181               4  1.33429e+02      1.20e-07
+polygon 182              10  1.27852e+02      1.15e-07
+polygon 183               4  1.26077e+02      1.14e-07
+polygon 184               4  1.23075e+02      1.11e-07
+polygon 185              13  1.21138e+02      1.09e-07
+polygon 186               8  1.20772e+02      1.09e-07
+polygon 187               4  1.11047e+02      1.00e-07
+polygon 188               9  1.05262e+02      9.50e-08
+polygon 189              10  1.04217e+02      9.41e-08
+polygon 190              12  1.01683e+02      9.18e-08
+polygon 191              16  1.00494e+02      9.07e-08
+polygon 192              11  9.83003e+01      8.87e-08
+polygon 193               4  8.59916e+01      7.76e-08
+polygon 194               4  8.44393e+01      7.62e-08
+polygon 195              22  8.29201e+01      7.49e-08
+polygon 196              14  8.12338e+01      7.33e-08
+polygon 197               3  7.95450e+01      7.18e-08
+polygon 198              10  7.81631e+01      7.06e-08
+polygon 199              10  7.80656e+01      7.05e-08
+polygon 200              11  7.70041e+01      6.95e-08
+polygon 201               9  7.41285e+01      6.69e-08
+polygon 202               8  7.35356e+01      6.64e-08
+polygon 203              11  6.95607e+01      6.28e-08
+polygon 204               6  6.94297e+01      6.27e-08
+polygon 205               7  6.75734e+01      6.10e-08
+polygon 206              10  6.66154e+01      6.01e-08
+polygon 207               7  6.47808e+01      5.85e-08
+polygon 208              10  5.43706e+01      4.91e-08
+polygon 209              12  5.43010e+01      4.90e-08
+polygon 210              10  5.11645e+01      4.62e-08
+polygon 211               4  4.87101e+01      4.40e-08
+polygon 212               7  4.65881e+01      4.21e-08
+polygon 213               7  4.62673e+01      4.18e-08
+polygon 214              12  4.56456e+01      4.12e-08
+polygon 215              12  4.27584e+01      3.86e-08
+polygon 216               3  4.07937e+01      3.68e-08
+polygon 217               9  3.66262e+01      3.31e-08
+polygon 218               8  3.54498e+01      3.20e-08
+polygon 219               3  3.00957e+01      2.72e-08
+polygon 220               9  2.87268e+01      2.59e-08
+polygon 221               6  2.72070e+01      2.46e-08
+polygon 222              11  2.53161e+01      2.29e-08
+polygon 223               8  2.36209e+01      2.13e-08
+polygon 224              11  2.17301e+01      1.96e-08
+polygon 225              15  2.12050e+01      1.91e-08
+polygon 226               7  2.11307e+01      1.91e-08
+polygon 227               9  1.01223e+01      9.14e-09
+polygon 228               5  1.28206e-02      1.16e-11
+polygon 229               3  8.52617e-03      7.70e-12
+polygon 230            8118  1.31536e+08      1.19e-01
+polygon 231 (hole)        5 -6.11195e-02     -5.52e-11
+polygon 232 (hole)        4 -7.71432e-01     -6.96e-10
+polygon 233             544  2.38756e+06      2.16e-03
+polygon 234             450  2.19976e+06      1.99e-03
+polygon 235             192  9.56037e+05      8.63e-04
+polygon 236              45  1.59899e+05      1.44e-04
+polygon 237              35  4.66392e+04      4.21e-05
+polygon 238              21  4.33341e+04      3.91e-05
+polygon 239              26  3.87120e+04      3.49e-05
+polygon 240              30  3.50035e+04      3.16e-05
+polygon 241              29  3.25164e+04      2.94e-05
+polygon 242              14  1.08064e+04      9.76e-06
+polygon 243              11  9.09187e+03      8.21e-06
+polygon 244              10  8.59000e+03      7.76e-06
+polygon 245              20  7.04106e+03      6.36e-06
+polygon 246              11  6.67608e+03      6.03e-06
+polygon 247               8  4.97006e+03      4.49e-06
+polygon 248               8  4.77848e+03      4.31e-06
+polygon 249              34  4.21294e+03      3.80e-06
+polygon 250               9  3.33479e+03      3.01e-06
+polygon 251              17  2.99015e+03      2.70e-06
+polygon 252               9  2.73779e+03      2.47e-06
+polygon 253               6  2.24166e+03      2.02e-06
+polygon 254               7  2.07296e+03      1.87e-06
+polygon 255               7  1.90828e+03      1.72e-06
+polygon 256               5  1.74118e+03      1.57e-06
+polygon 257               8  1.61296e+03      1.46e-06
+polygon 258              55  1.51750e+03      1.37e-06
+polygon 259               7  1.49850e+03      1.35e-06
+polygon 260              17  1.14899e+03      1.04e-06
+polygon 261               6  9.63070e+02      8.69e-07
+polygon 262               7  8.14083e+02      7.35e-07
+polygon 263               7  6.84986e+02      6.18e-07
+polygon 264              36  6.30892e+02      5.70e-07
+polygon 265               8  6.00831e+02      5.42e-07
+polygon 266               5  4.70705e+02      4.25e-07
+polygon 267               5  3.85944e+02      3.48e-07
+polygon 268               6  3.67518e+02      3.32e-07
+polygon 269               6  3.52326e+02      3.18e-07
+polygon 270               4  3.09670e+02      2.80e-07
+polygon 271               4  2.92944e+02      2.64e-07
+polygon 272               5  2.55302e+02      2.30e-07
+polygon 273               4  1.96321e+02      1.77e-07
+polygon 274               4  1.96023e+02      1.77e-07
+polygon 275               5  1.82602e+02      1.65e-07
+polygon 276               4  1.80523e+02      1.63e-07
+polygon 277               4  1.50301e+02      1.36e-07
+polygon 278               3  9.08798e+01      8.20e-08
+polygon 279               3  7.32514e+01      6.61e-08
+polygon 280               3  4.77250e+01      4.31e-08
+polygon 281               3  3.79807e+01      3.43e-08
+polygon 282               3  3.47369e+01      3.14e-08
+polygon 283               3  4.91801e-03      4.44e-12
+polygon 284            1133  1.23129e+07      1.11e-02
+polygon 285 (hole)        3 -3.43431e+00     -3.10e-09
+polygon 286 (hole)       18 -1.37983e+02     -1.25e-07
+polygon 287              49  1.52029e+04      1.37e-05
+polygon 288             117  1.18432e+05      1.07e-04
+polygon 289            1222  9.89924e+06      8.94e-03
+polygon 290               6  1.17937e+02      1.06e-07
+polygon 291               6  1.64006e+01      1.48e-08
+polygon 292               4  4.81589e+00      4.35e-09
+polygon 293            2279  1.86152e+07      1.68e-02
+polygon 294            3075  8.38714e+07      7.57e-02
+polygon 295 (hole)        3 -1.35138e-03     -1.22e-12
+polygon 296             274  3.63312e+05      3.28e-04
+polygon 297             351  8.06076e+04      7.28e-05
+polygon 298              73  5.22152e+04      4.71e-05
+polygon 299              83  1.34533e+04      1.21e-05
+polygon 300              25  1.09380e+04      9.87e-06
+polygon 301              75  6.47002e+03      5.84e-06
+polygon 302              30  2.30958e+03      2.09e-06
+polygon 303              75  1.33738e+03      1.21e-06
+polygon 304               6  1.24937e+03      1.13e-06
+polygon 305              31  5.98645e+02      5.40e-07
+polygon 306              16  5.36042e+02      4.84e-07
+polygon 307              15  4.32601e+02      3.91e-07
+polygon 308              21  4.31177e+02      3.89e-07
+polygon 309              45  3.08884e+02      2.79e-07
+polygon 310              16  1.93393e+02      1.75e-07
+polygon 311              19  1.56792e+02      1.42e-07
+polygon 312              40  1.52696e+02      1.38e-07
+polygon 313              20  1.45173e+02      1.31e-07
+polygon 314              15  1.40826e+02      1.27e-07
+polygon 315              21  1.18481e+02      1.07e-07
+polygon 316              15  1.06343e+02      9.60e-08
+polygon 317              12  9.87637e+01      8.92e-08
+polygon 318              21  9.65208e+01      8.71e-08
+polygon 319              21  8.44004e+01      7.62e-08
+polygon 320              13  6.82927e+01      6.17e-08
+polygon 321              11  4.43975e+01      4.01e-08
+polygon 322               7  2.31612e+01      2.09e-08
+polygon 323               5  5.61153e+00      5.07e-09
+polygon 324               3  1.23706e-02      1.12e-11
+polygon 325            4699  1.40161e+08      1.27e-01
+polygon 326              31  6.84325e+02      6.18e-07
+polygon 327              17  1.62107e+02      1.46e-07
+polygon 328               7  1.54751e+02      1.40e-07
+polygon 329              24  9.86318e+01      8.90e-08
+polygon 330            6091  3.77006e+07      3.40e-02
+polygon 331 (hole)        3 -4.49601e-01     -4.06e-10
+polygon 332             442  1.39822e+06      1.26e-03
+polygon 333             212  2.25325e+05      2.03e-04
+polygon 334              91  1.26749e+05      1.14e-04
+polygon 335             110  5.38170e+04      4.86e-05
+polygon 336              44  3.38506e+04      3.06e-05
+polygon 337              37  2.50015e+04      2.26e-05
+polygon 338              48  1.54073e+04      1.39e-05
+polygon 339              24  1.21196e+04      1.09e-05
+polygon 340              39  6.78777e+03      6.13e-06
+polygon 341              12  4.03869e+03      3.65e-06
+polygon 342              12  1.21163e+03      1.09e-06
+polygon 343               8  6.62219e+02      5.98e-07
+polygon 344               5  3.91987e+02      3.54e-07
+polygon 345               7  3.34004e+02      3.02e-07
+polygon 346              14  1.85010e+02      1.67e-07
+polygon 347              10  1.48224e+02      1.34e-07
+polygon 348              11  1.30416e+02      1.18e-07
+polygon 349               8  1.16411e+02      1.05e-07
+polygon 350               3  5.77369e-04      5.21e-13
+polygon 351               7  5.02602e+02      4.54e-07
+polygon 352               6  6.77496e+01      6.12e-08
+polygon 353              70  3.54724e+04      3.20e-05
+polygon 354              36  2.57679e+04      2.33e-05
+polygon 355              37  1.28752e+04      1.16e-05
+polygon 356              36  4.74223e+01      4.28e-08
+polygon 357              20  2.26019e+02      2.04e-07
+polygon 358              25  2.80040e+01      2.53e-08
+polygon 359              10  1.52220e+01      1.37e-08
+polygon 360               8  1.02109e+01      9.22e-09
+polygon 361             490  1.19672e+06      1.08e-03
+polygon 362              10  3.33987e+01      3.02e-08
+polygon 363              12  4.85108e+01      4.38e-08
+polygon 364              12  2.34522e+01      2.12e-08
+polygon 365              14  4.84192e+01      4.37e-08
+polygon 366              13  3.56201e+01      3.22e-08
+polygon 367             136  5.19022e+04      4.69e-05
+polygon 368              56  3.58639e+03      3.24e-06
+polygon 369              10  1.08541e+02      9.80e-08
+polygon 370              55  2.71039e+04      2.45e-05
+polygon 371              15  2.14847e+02      1.94e-07
+polygon 372               7  2.37758e+03      2.15e-06
+polygon 373              17  4.77062e+03      4.31e-06
+polygon 374              17  1.86343e+02      1.68e-07
+polygon 375               6  4.55785e+01      4.11e-08
+polygon 376               9  1.81625e+01      1.64e-08
+polygon 377              10  4.58814e+01      4.14e-08
+polygon 378              47  3.08664e+03      2.79e-06
+polygon 379               8  6.06639e+01      5.48e-08
+polygon 380              19  7.01377e+02      6.33e-07
+polygon 381              13  6.83719e+01      6.17e-08
+polygon 382              16  5.11960e+01      4.62e-08
+polygon 383              14  5.96205e+01      5.38e-08
+polygon 384              24  3.83672e+02      3.46e-07
+polygon 385               7  3.33167e+01      3.01e-08
+polygon 386              48  5.19572e+04      4.69e-05
+polygon 387              15  1.46197e+02      1.32e-07
+polygon 388             643  3.69663e+06      3.34e-03
+polygon 389               9  3.48719e+01      3.15e-08
+polygon 390              11  5.42736e+01      4.90e-08
+polygon 391              90  4.53460e+04      4.09e-05
+polygon 392               8  1.67832e+01      1.52e-08
+polygon 393              10  6.14272e+01      5.55e-08
+polygon 394               6  2.88961e+01      2.61e-08
+polygon 395               5  2.38396e+01      2.15e-08
+polygon 396              12  1.96357e+02      1.77e-07
+polygon 397              22  4.17044e+02      3.77e-07
+polygon 398             489  7.06662e+05      6.38e-04
+polygon 399             132  5.21563e+04      4.71e-05
+polygon 400              72  1.99768e+04      1.80e-05
+polygon 401               8  9.40746e+01      8.49e-08
+polygon 402             311  1.19326e+06      1.08e-03
+polygon 403             228  4.69782e+05      4.24e-04
+polygon 404              13  1.55838e+02      1.41e-07
+polygon 405              21  4.65158e+02      4.20e-07
+polygon 406               9  1.91239e+01      1.73e-08
+polygon 407              25  7.77060e+02      7.02e-07
+polygon 408              15  4.30511e+01      3.89e-08
+polygon 409              26  3.90704e+02      3.53e-07
+polygon 410               4  2.16800e+02      1.96e-07
+polygon 411             351  1.19249e+06      1.08e-03
+polygon 412              23  3.31784e+02      3.00e-07
+polygon 413              34  3.90838e+02      3.53e-07
+polygon 414              76  4.74815e+02      4.29e-07
+polygon 415               9  1.11071e+01      1.00e-08
+polygon 416              14  1.27985e+02      1.16e-07
+polygon 417              27  1.87301e+02      1.69e-07
+polygon 418              12  1.52537e+02      1.38e-07
+polygon 419              15  3.99714e+01      3.61e-08
+polygon 420              17  1.69307e+04      1.53e-05
+polygon 421               9  1.01842e+02      9.19e-08
+polygon 422              35  7.66255e+04      6.92e-05
+polygon 423            1137  2.44530e+06      2.21e-03
+polygon 424              40  5.12223e+02      4.62e-07
+polygon 425              25  4.42555e+01      4.00e-08
+polygon 426              10  6.69234e+01      6.04e-08
+polygon 427              77  8.09806e+04      7.31e-05
+polygon 428            3371  1.38493e+07      1.25e-02
+polygon 429              36  4.66568e+04      4.21e-05
+polygon 430              19  8.56173e+02      7.73e-07
+polygon 431              57  3.77701e+04      3.41e-05
+polygon 432               4  4.99313e+01      4.51e-08
+polygon 433              49  2.17138e+03      1.96e-06
+polygon 434               9  9.89253e+01      8.93e-08
+polygon 435              17  4.34807e+02      3.93e-07
+polygon 436               6  1.59752e+02      1.44e-07
+polygon 437              19  6.22290e+02      5.62e-07
+polygon 438             507  1.92763e+06      1.74e-03
+polygon 439             923  7.01607e+05      6.33e-04
+polygon 440             243  5.33841e+05      4.82e-04
+polygon 441               9  3.97561e+02      3.59e-07
+polygon 442               7  2.35211e+01      2.12e-08
+polygon 443               7  2.72058e+01      2.46e-08
+polygon 444              10  4.24208e+01      3.83e-08
+polygon 445               9  2.51114e+01      2.27e-08
+polygon 446               7  2.93070e+01      2.65e-08
+polygon 447               9  2.43420e+01      2.20e-08
+polygon 448               6  1.78291e+01      1.61e-08
+polygon 449               9  1.62422e+01      1.47e-08
+polygon 450             238  2.25711e+05      2.04e-04
+polygon 451              19  1.94945e+02      1.76e-07
+polygon 452               6  1.39148e+01      1.26e-08
+polygon 453               7  1.24914e+01      1.13e-08
+polygon 454              40  2.61263e+02      2.36e-07
+polygon 455              17  4.34621e+01      3.92e-08
+polygon 456               7  1.01286e+01      9.14e-09
+polygon 457               6  1.05644e+01      9.54e-09
+polygon 458             148  4.45409e+04      4.02e-05
+polygon 459              19  1.24464e+03      1.12e-06
+polygon 460              50  2.33422e+04      2.11e-05
+polygon 461               9  3.27328e+01      2.96e-08
+polygon 462               9  3.01348e+01      2.72e-08
+polygon 463              11  2.39579e+01      2.16e-08
+polygon 464             485  9.67688e+05      8.74e-04
+polygon 465              17  6.65119e+01      6.00e-08
+polygon 466            8489  1.32770e+08      1.20e-01
+polygon 467 (hole)        3 -1.23988e-04     -1.12e-13
+polygon 468             194  1.38709e+06      1.25e-03
+polygon 469             488  1.44760e+07      1.31e-02
+polygon 470            1548  9.37363e+06      8.46e-03
+polygon 471               4  4.53380e+02      4.09e-07
+polygon 472              71  1.85586e+04      1.68e-05
+polygon 473             577  6.98927e+06      6.31e-03
+polygon 474               9  4.80776e+02      4.34e-07
+polygon 475               8  3.50193e+02      3.16e-07
+polygon 476               7  6.22027e+02      5.62e-07
+polygon 477               6  4.95033e+02      4.47e-07
+polygon 478              12  2.15496e+02      1.95e-07
+polygon 479              12  4.90722e+02      4.43e-07
+polygon 480              57  1.29769e+04      1.17e-05
+polygon 481              13  6.40371e+02      5.78e-07
+polygon 482               4  6.52049e-01      5.89e-10
+polygon 483             584  1.06922e+07      9.65e-03
+polygon 484            1078  1.26332e+07      1.14e-02
+polygon 485               3  1.43642e-01      1.30e-10
+polygon 486              52  2.79202e+04      2.52e-05
+polygon 487              81  2.96554e+04      2.68e-05
+polygon 488            1490  1.29618e+07      1.17e-02
+polygon 489             825  9.67328e+05      8.73e-04
+polygon 490               4  2.57652e-02      2.33e-11
+polygon 491            3848  4.84467e+07      4.37e-02
+polygon 492              24  3.62301e+03      3.27e-06
+polygon 493              21  1.96176e+04      1.77e-05
+polygon 494              28  4.76927e+02      4.31e-07
+polygon 495             362  3.56358e+04      3.22e-05
+polygon 496             367  5.91302e+04      5.34e-05
+polygon 497               7  2.59469e+01      2.34e-08
+polygon 498              10  9.61126e+01      8.68e-08
+polygon 499              15  9.08542e+01      8.20e-08
+polygon 500              12  2.32528e+02      2.10e-07
+polygon 501              25  1.03250e+03      9.32e-07
+polygon 502               9  2.43616e+01      2.20e-08
+polygon 503               7  2.88779e+01      2.61e-08
+polygon 504              17  2.37097e+02      2.14e-07
+polygon 505               7  1.01855e+01      9.20e-09
+polygon 506               8  5.73968e+00      5.18e-09
+polygon 507              19  9.26957e+01      8.37e-08
+polygon 508               8  9.00682e+01      8.13e-08
+polygon 509              27  3.82914e+02      3.46e-07
+polygon 510              11  7.04646e+01      6.36e-08
+polygon 511              13  5.14988e+01      4.65e-08
+polygon 512               7  3.50834e+01      3.17e-08
+polygon 513              11  2.40764e+01      2.17e-08
+polygon 514               9  7.22580e+00      6.52e-09
+polygon 515              11  3.23106e+01      2.92e-08
+polygon 516              12  1.27507e+01      1.15e-08
+polygon 517               6  2.68020e+01      2.42e-08
+polygon 518              19  3.40915e+01      3.08e-08
+polygon 519              16  9.74248e+03      8.80e-06
+polygon 520              15  8.62567e+02      7.79e-07
+polygon 521              24  9.47027e+03      8.55e-06
+polygon 522            4771  4.98275e+07      4.50e-02
+polygon 523               7  6.38100e+01      5.76e-08
+polygon 524              27  4.68693e+04      4.23e-05
+polygon 525              23  1.92259e+02      1.74e-07
+polygon 526              25  3.82828e+02      3.46e-07
+polygon 527              12  1.96990e+01      1.78e-08
+polygon 528              37  2.72982e+03      2.46e-06
+polygon 529               9  6.80039e+01      6.14e-08
+polygon 530               8  1.91835e+01      1.73e-08
+polygon 531               8  4.05109e+01      3.66e-08
+polygon 532              92  9.79067e+03      8.84e-06
+polygon 533             688  1.69374e+06      1.53e-03
+polygon 534               4  2.90504e+01      2.62e-08
+polygon 535               8  6.22234e+01      5.62e-08
+polygon 536               5  1.60025e+02      1.44e-07
+polygon 537               4  2.42622e+01      2.19e-08
+polygon 538               5  2.30873e+01      2.08e-08
+polygon 539               7  9.49956e+00      8.58e-09
+polygon 540              24  5.91828e+02      5.34e-07
+polygon 541               7  5.09348e+01      4.60e-08
+polygon 542               5  1.51300e+01      1.37e-08
+polygon 543               5  3.03832e+01      2.74e-08
+polygon 544               6  7.48678e+01      6.76e-08
+polygon 545               8  2.59836e+02      2.35e-07
+polygon 546              28  1.28945e+03      1.16e-06
+polygon 547              21  6.76380e+02      6.11e-07
+polygon 548               6  4.07393e+01      3.68e-08
+polygon 549               5  4.18869e+01      3.78e-08
+polygon 550             286  4.45181e+05      4.02e-04
+polygon 551               7  3.92215e+02      3.54e-07
+polygon 552            7093  9.48148e+07      8.56e-02
+polygon 553             280  1.16336e+06      1.05e-03
+polygon 554            5036  6.91720e+07      6.24e-02
+enclosing rectangle: [801026, 863539.9] x [801678, 846903.1] units
+                     (62510 x 45230 units)
+Window area = 1107650000 square units
+Fraction of frame area: 0.392</code></pre>
+</div>
+</div>
+<p>These 2 code chunks below is converting a spatial dataset named “cp_sf” into a format suitable for analyzing and studying point patterns to reflect the data onto the geographical regions we are interested in.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>cp_sf <span class="ot">&lt;-</span> cp_sf <span class="sc">%&gt;%</span> <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">2326</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>cp_ppp <span class="ot">&lt;-</span> <span class="fu">as.ppp</span>(cp_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="creating-owin-object-for-yau-ma-tei" class="level2">
+<h2 class="anchored" data-anchor-id="creating-owin-object-for-yau-ma-tei">4.1 Creating Owin Object for Yau Ma Tei</h2>
+<p>As mentioned in Section 1 when loading the datasets, as we can only analyse a certain area of Hong Kong due to the size of the dataset, we also have to create an owin object for Yau Ma Tei similar to district_18.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>yaumatei_sp <span class="ot">&lt;-</span> <span class="fu">as_Spatial</span>(yaumatei)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>yaumatei_sp <span class="ot">&lt;-</span> <span class="fu">as</span>(yaumatei_sp, <span class="st">"SpatialPolygons"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>yaumatei_sp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>class       : SpatialPolygons 
+features    : 3 
+extent      : 835081.2, 835826.2, 818489.8, 819609.9  (xmin, xmax, ymin, ymax)
+crs         : +proj=tmerc +lat_0=22.3121333333333 +lon_0=114.178555555556 +k=1 +x_0=836694.05 +y_0=819069.8 +ellps=intl +towgs84=-162.619,-276.959,-161.764,0.067753,-2.243648,-1.158828,-1.094246 +units=m +no_defs </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>yaumatei_owin <span class="ot">&lt;-</span> <span class="fu">as</span>(yaumatei_sp, <span class="st">"owin"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(yaumatei_owin)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(yaumatei_owin)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Window: polygonal boundary
+88 separate polygons (no holes)
+            vertices     area relative.area
+polygon 1          4 1994.500       0.01050
+polygon 2          5 1782.880       0.00936
+polygon 3          6 1832.520       0.00962
+polygon 4          5 1808.550       0.00950
+polygon 5          9  925.577       0.00486
+polygon 6          4 1830.980       0.00961
+polygon 7          4 1863.120       0.00978
+polygon 8          4 1833.360       0.00963
+polygon 9          4 1838.460       0.00965
+polygon 10         4 1841.600       0.00967
+polygon 11         4  879.719       0.00462
+polygon 12         4 1767.650       0.00928
+polygon 13         4 1954.340       0.01030
+polygon 14        16 4828.200       0.02540
+polygon 15         8 3715.400       0.01950
+polygon 16         7 3645.450       0.01910
+polygon 17         4 2584.170       0.01360
+polygon 18         4 3000.430       0.01580
+polygon 19         4 3587.550       0.01880
+polygon 20         4 1533.380       0.00805
+polygon 21         6 2884.690       0.01510
+polygon 22         4 3061.470       0.01610
+polygon 23         6 2835.480       0.01490
+polygon 24        18 1736.070       0.00912
+polygon 25         4 1824.630       0.00958
+polygon 26        10 1660.020       0.00872
+polygon 27        13 1736.770       0.00912
+polygon 28         4  799.380       0.00420
+polygon 29         4 2456.810       0.01290
+polygon 30         4 2786.240       0.01460
+polygon 31         4 3620.530       0.01900
+polygon 32         4 3420.380       0.01800
+polygon 33         4 3596.240       0.01890
+polygon 34         4 2680.360       0.01410
+polygon 35         9 1606.550       0.00844
+polygon 36         7 2971.370       0.01560
+polygon 37         9 1958.350       0.01030
+polygon 38         8 3153.290       0.01660
+polygon 39         4 6432.820       0.03380
+polygon 40         9 2740.580       0.01440
+polygon 41         5 1682.210       0.00883
+polygon 42        11 1638.730       0.00860
+polygon 43         4 1767.400       0.00928
+polygon 44         4 1681.320       0.00883
+polygon 45         4 1855.490       0.00974
+polygon 46         6  815.307       0.00428
+polygon 47         4 1832.950       0.00962
+polygon 48         6 1305.660       0.00686
+polygon 49         4 1918.570       0.01010
+polygon 50         5 1185.260       0.00622
+polygon 51         9  265.944       0.00140
+polygon 52         4 1909.010       0.01000
+polygon 53         4 6413.630       0.03370
+polygon 54         4 1904.170       0.01000
+polygon 55         4 1885.140       0.00990
+polygon 56         4 1613.600       0.00847
+polygon 57         4 1810.800       0.00951
+polygon 58         4 1586.040       0.00833
+polygon 59         4 1542.780       0.00810
+polygon 60         4 1803.090       0.00947
+polygon 61         4 1780.060       0.00935
+polygon 62         4 1731.440       0.00909
+polygon 63        11 1406.070       0.00738
+polygon 64         4 1813.850       0.00952
+polygon 65         4  811.668       0.00426
+polygon 66         5 2455.930       0.01290
+polygon 67         4 1244.020       0.00653
+polygon 68         4 1515.100       0.00795
+polygon 69         4  682.022       0.00358
+polygon 70         6  708.960       0.00372
+polygon 71         4  483.173       0.00254
+polygon 72         4 1508.140       0.00792
+polygon 73         6 1391.670       0.00731
+polygon 74         4  619.850       0.00325
+polygon 75         4  479.579       0.00252
+polygon 76         8 6406.540       0.03360
+polygon 77         5 1965.450       0.01030
+polygon 78         9 1991.460       0.01050
+polygon 79         9 2994.550       0.01570
+polygon 80         4 1397.220       0.00734
+polygon 81         4 1970.220       0.01030
+polygon 82         4 1619.270       0.00850
+polygon 83         9 3901.430       0.02050
+polygon 84         8 2069.980       0.01090
+polygon 85         7 4744.040       0.02490
+polygon 86         4 2491.900       0.01310
+polygon 87         8 1928.700       0.01010
+polygon 88         8 2921.990       0.01530
+enclosing rectangle: [835081.2, 835826.2] x [818489.8, 819609.9] units
+                     (744.9 x 1120 units)
+Window area = 190461 square units
+Fraction of frame area: 0.228</code></pre>
+</div>
+</div>
+<p>These 2 code chunks below, we are reflecting the recycling points in cp_ppp onto the geographical location of yaumatei_owin, plotting yaumatei_cp_ppp shows us how dispersed are these recycling points in Yau Ma Tei only.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>yaumatei_cp_ppp <span class="ot">=</span> cp_ppp[yaumatei_owin]</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(yaumatei_cp_ppp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Planar point pattern:  20 points
+Average intensity 0.0001050083 points per square unit
+
+Coordinates are given to 2 decimal places
+i.e. rounded to the nearest multiple of 0.01 units
+
+Window: polygonal boundary
+88 separate polygons (no holes)
+            vertices     area relative.area
+polygon 1          4 1994.500       0.01050
+polygon 2          5 1782.880       0.00936
+polygon 3          6 1832.520       0.00962
+polygon 4          5 1808.550       0.00950
+polygon 5          9  925.577       0.00486
+polygon 6          4 1830.980       0.00961
+polygon 7          4 1863.120       0.00978
+polygon 8          4 1833.360       0.00963
+polygon 9          4 1838.460       0.00965
+polygon 10         4 1841.600       0.00967
+polygon 11         4  879.719       0.00462
+polygon 12         4 1767.650       0.00928
+polygon 13         4 1954.340       0.01030
+polygon 14        16 4828.200       0.02540
+polygon 15         8 3715.400       0.01950
+polygon 16         7 3645.450       0.01910
+polygon 17         4 2584.170       0.01360
+polygon 18         4 3000.430       0.01580
+polygon 19         4 3587.550       0.01880
+polygon 20         4 1533.380       0.00805
+polygon 21         6 2884.690       0.01510
+polygon 22         4 3061.470       0.01610
+polygon 23         6 2835.480       0.01490
+polygon 24        18 1736.070       0.00912
+polygon 25         4 1824.630       0.00958
+polygon 26        10 1660.020       0.00872
+polygon 27        13 1736.770       0.00912
+polygon 28         4  799.380       0.00420
+polygon 29         4 2456.810       0.01290
+polygon 30         4 2786.240       0.01460
+polygon 31         4 3620.530       0.01900
+polygon 32         4 3420.380       0.01800
+polygon 33         4 3596.240       0.01890
+polygon 34         4 2680.360       0.01410
+polygon 35         9 1606.550       0.00844
+polygon 36         7 2971.370       0.01560
+polygon 37         9 1958.350       0.01030
+polygon 38         8 3153.290       0.01660
+polygon 39         4 6432.820       0.03380
+polygon 40         9 2740.580       0.01440
+polygon 41         5 1682.210       0.00883
+polygon 42        11 1638.730       0.00860
+polygon 43         4 1767.400       0.00928
+polygon 44         4 1681.320       0.00883
+polygon 45         4 1855.490       0.00974
+polygon 46         6  815.307       0.00428
+polygon 47         4 1832.950       0.00962
+polygon 48         6 1305.660       0.00686
+polygon 49         4 1918.570       0.01010
+polygon 50         5 1185.260       0.00622
+polygon 51         9  265.944       0.00140
+polygon 52         4 1909.010       0.01000
+polygon 53         4 6413.630       0.03370
+polygon 54         4 1904.170       0.01000
+polygon 55         4 1885.140       0.00990
+polygon 56         4 1613.600       0.00847
+polygon 57         4 1810.800       0.00951
+polygon 58         4 1586.040       0.00833
+polygon 59         4 1542.780       0.00810
+polygon 60         4 1803.090       0.00947
+polygon 61         4 1780.060       0.00935
+polygon 62         4 1731.440       0.00909
+polygon 63        11 1406.070       0.00738
+polygon 64         4 1813.850       0.00952
+polygon 65         4  811.668       0.00426
+polygon 66         5 2455.930       0.01290
+polygon 67         4 1244.020       0.00653
+polygon 68         4 1515.100       0.00795
+polygon 69         4  682.022       0.00358
+polygon 70         6  708.960       0.00372
+polygon 71         4  483.173       0.00254
+polygon 72         4 1508.140       0.00792
+polygon 73         6 1391.670       0.00731
+polygon 74         4  619.850       0.00325
+polygon 75         4  479.579       0.00252
+polygon 76         8 6406.540       0.03360
+polygon 77         5 1965.450       0.01030
+polygon 78         9 1991.460       0.01050
+polygon 79         9 2994.550       0.01570
+polygon 80         4 1397.220       0.00734
+polygon 81         4 1970.220       0.01030
+polygon 82         4 1619.270       0.00850
+polygon 83         9 3901.430       0.02050
+polygon 84         8 2069.980       0.01090
+polygon 85         7 4744.040       0.02490
+polygon 86         4 2491.900       0.01310
+polygon 87         8 1928.700       0.01010
+polygon 88         8 2921.990       0.01530
+enclosing rectangle: [835081.2, 835826.2] x [818489.8, 819609.9] units
+                     (744.9 x 1120 units)
+Window area = 190461 square units
+Fraction of frame area: 0.228</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(yaumatei_cp_ppp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="hk_cp_ppp" class="level2">
+<h2 class="anchored" data-anchor-id="hk_cp_ppp">4.2 HK_CP_PPP</h2>
+<p>These 2 code chunks below, we are reflecting the recycling points in cp_ppp onto the geographical location of district_18_owin, plotting hk_cp_ppp shows us how dispersed are these recycling points in the whole of Hong Kong.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>hk_cp_ppp <span class="ot">=</span> cp_ppp[district_18_owin]</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(hk_cp_ppp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Planar point pattern:  6471 points
+Average intensity 5.842093e-06 points per square unit
+
+Coordinates are given to 2 decimal places
+i.e. rounded to the nearest multiple of 0.01 units
+
+Window: polygonal boundary
+554 separate polygons (11 holes)
+                   vertices         area relative.area
+polygon 1              1653  9.30390e+06      8.40e-03
+polygon 2              1035  1.02618e+07      9.26e-03
+polygon 3 (hole)         17 -1.89507e+05     -1.71e-04
+polygon 4                21  5.51970e+03      4.98e-06
+polygon 5                22  8.11389e+03      7.33e-06
+polygon 6              2281  1.12610e+07      1.02e-02
+polygon 7             14565  1.19648e+08      1.08e-01
+polygon 8 (hole)          4 -2.02333e-03     -1.83e-12
+polygon 9 (hole)          3 -3.84756e-03     -3.47e-12
+polygon 10 (hole)         3 -9.53691e+00     -8.61e-09
+polygon 11              914  6.65728e+06      6.01e-03
+polygon 12              681  2.42108e+06      2.19e-03
+polygon 13              283  1.84390e+06      1.66e-03
+polygon 14              251  1.04012e+06      9.39e-04
+polygon 15              335  8.15906e+05      7.37e-04
+polygon 16              350  6.75189e+05      6.10e-04
+polygon 17              751  6.09908e+05      5.51e-04
+polygon 18              190  5.72158e+05      5.17e-04
+polygon 19              161  5.43459e+05      4.91e-04
+polygon 20              226  2.42048e+05      2.19e-04
+polygon 21              238  2.14498e+05      1.94e-04
+polygon 22              228  1.98823e+05      1.79e-04
+polygon 23              103  1.00302e+05      9.06e-05
+polygon 24               52  9.16507e+04      8.27e-05
+polygon 25               50  7.26151e+04      6.56e-05
+polygon 26               49  6.85844e+04      6.19e-05
+polygon 27               35  5.70831e+04      5.15e-05
+polygon 28               31  2.98409e+04      2.69e-05
+polygon 29               21  2.72311e+04      2.46e-05
+polygon 30               15  2.57311e+04      2.32e-05
+polygon 31               37  2.14632e+04      1.94e-05
+polygon 32               25  2.13912e+04      1.93e-05
+polygon 33               15  1.78152e+04      1.61e-05
+polygon 34               25  1.76358e+04      1.59e-05
+polygon 35               13  1.76280e+04      1.59e-05
+polygon 36               33  1.65082e+04      1.49e-05
+polygon 37               21  1.61594e+04      1.46e-05
+polygon 38               17  1.48243e+04      1.34e-05
+polygon 39               28  1.33689e+04      1.21e-05
+polygon 40               18  1.24433e+04      1.12e-05
+polygon 41               27  1.22580e+04      1.11e-05
+polygon 42               12  1.06972e+04      9.66e-06
+polygon 43               22  1.05199e+04      9.50e-06
+polygon 44               23  9.88005e+03      8.92e-06
+polygon 45               14  9.78713e+03      8.84e-06
+polygon 46               27  9.29305e+03      8.39e-06
+polygon 47               31  8.32187e+03      7.51e-06
+polygon 48               10  8.17340e+03      7.38e-06
+polygon 49               22  7.96080e+03      7.19e-06
+polygon 50               22  7.48067e+03      6.75e-06
+polygon 51              258  7.46966e+03      6.74e-06
+polygon 52               36  7.31757e+03      6.61e-06
+polygon 53               63  6.86298e+03      6.20e-06
+polygon 54               14  6.79886e+03      6.14e-06
+polygon 55               16  6.59734e+03      5.96e-06
+polygon 56               14  6.09227e+03      5.50e-06
+polygon 57               16  6.05289e+03      5.46e-06
+polygon 58               19  5.91849e+03      5.34e-06
+polygon 59               20  5.80315e+03      5.24e-06
+polygon 60               10  5.76542e+03      5.21e-06
+polygon 61               13  5.55603e+03      5.02e-06
+polygon 62               17  5.45400e+03      4.92e-06
+polygon 63               19  5.10436e+03      4.61e-06
+polygon 64               23  4.78752e+03      4.32e-06
+polygon 65                7  4.70569e+03      4.25e-06
+polygon 66                8  4.66310e+03      4.21e-06
+polygon 67                9  4.59885e+03      4.15e-06
+polygon 68               20  4.38585e+03      3.96e-06
+polygon 69              144  4.37373e+03      3.95e-06
+polygon 70               18  4.29198e+03      3.87e-06
+polygon 71               47  4.07152e+03      3.68e-06
+polygon 72               14  4.06044e+03      3.67e-06
+polygon 73               14  3.54017e+03      3.20e-06
+polygon 74               17  3.37193e+03      3.04e-06
+polygon 75               17  3.36321e+03      3.04e-06
+polygon 76               13  3.28640e+03      2.97e-06
+polygon 77               26  2.99428e+03      2.70e-06
+polygon 78               11  2.88910e+03      2.61e-06
+polygon 79               10  2.86533e+03      2.59e-06
+polygon 80               11  2.79032e+03      2.52e-06
+polygon 81               14  2.79027e+03      2.52e-06
+polygon 82               11  2.58161e+03      2.33e-06
+polygon 83               13  2.42729e+03      2.19e-06
+polygon 84               15  2.30830e+03      2.08e-06
+polygon 85                7  2.21865e+03      2.00e-06
+polygon 86               13  2.17568e+03      1.96e-06
+polygon 87               36  2.06855e+03      1.87e-06
+polygon 88               18  2.06576e+03      1.86e-06
+polygon 89               10  2.01797e+03      1.82e-06
+polygon 90               22  1.85440e+03      1.67e-06
+polygon 91               17  1.82593e+03      1.65e-06
+polygon 92               10  1.70842e+03      1.54e-06
+polygon 93                8  1.65603e+03      1.50e-06
+polygon 94                9  1.53969e+03      1.39e-06
+polygon 95               24  1.51936e+03      1.37e-06
+polygon 96                9  1.51913e+03      1.37e-06
+polygon 97                8  1.48111e+03      1.34e-06
+polygon 98                7  1.43802e+03      1.30e-06
+polygon 99               20  1.42144e+03      1.28e-06
+polygon 100              10  1.31353e+03      1.19e-06
+polygon 101              10  1.29414e+03      1.17e-06
+polygon 102              10  1.22518e+03      1.11e-06
+polygon 103               6  1.15196e+03      1.04e-06
+polygon 104              17  1.03438e+03      9.34e-07
+polygon 105               6  1.02963e+03      9.30e-07
+polygon 106              15  1.00775e+03      9.10e-07
+polygon 107               8  1.00217e+03      9.05e-07
+polygon 108               5  9.70507e+02      8.76e-07
+polygon 109               5  9.30361e+02      8.40e-07
+polygon 110               9  8.92773e+02      8.06e-07
+polygon 111               8  8.90735e+02      8.04e-07
+polygon 112               7  8.88789e+02      8.02e-07
+polygon 113              16  8.53169e+02      7.70e-07
+polygon 114               6  8.28719e+02      7.48e-07
+polygon 115               5  8.09244e+02      7.31e-07
+polygon 116               7  7.35780e+02      6.64e-07
+polygon 117               8  7.28463e+02      6.58e-07
+polygon 118              10  7.28056e+02      6.57e-07
+polygon 119              11  7.27486e+02      6.57e-07
+polygon 120              12  6.80896e+02      6.15e-07
+polygon 121               5  6.80380e+02      6.14e-07
+polygon 122               7  6.75760e+02      6.10e-07
+polygon 123               7  6.70564e+02      6.05e-07
+polygon 124              11  6.64727e+02      6.00e-07
+polygon 125               7  6.45937e+02      5.83e-07
+polygon 126               7  6.42090e+02      5.80e-07
+polygon 127               9  6.29087e+02      5.68e-07
+polygon 128               8  6.10429e+02      5.51e-07
+polygon 129               7  5.69663e+02      5.14e-07
+polygon 130               5  5.67623e+02      5.12e-07
+polygon 131               5  5.45507e+02      4.92e-07
+polygon 132               7  5.40773e+02      4.88e-07
+polygon 133               5  5.40584e+02      4.88e-07
+polygon 134              14  5.26188e+02      4.75e-07
+polygon 135               7  5.24684e+02      4.74e-07
+polygon 136               6  5.19102e+02      4.69e-07
+polygon 137               5  4.96687e+02      4.48e-07
+polygon 138               5  4.73610e+02      4.28e-07
+polygon 139               9  4.56890e+02      4.12e-07
+polygon 140               6  4.49927e+02      4.06e-07
+polygon 141               6  4.49210e+02      4.06e-07
+polygon 142               6  4.42876e+02      4.00e-07
+polygon 143               8  4.18865e+02      3.78e-07
+polygon 144              13  3.96399e+02      3.58e-07
+polygon 145               5  3.76957e+02      3.40e-07
+polygon 146              20  3.75857e+02      3.39e-07
+polygon 147              18  3.71329e+02      3.35e-07
+polygon 148               5  3.59000e+02      3.24e-07
+polygon 149               6  3.45591e+02      3.12e-07
+polygon 150              14  3.38146e+02      3.05e-07
+polygon 151              17  3.21311e+02      2.90e-07
+polygon 152               9  3.18857e+02      2.88e-07
+polygon 153               6  3.17341e+02      2.86e-07
+polygon 154               5  3.14077e+02      2.84e-07
+polygon 155               4  3.07705e+02      2.78e-07
+polygon 156               5  3.02070e+02      2.73e-07
+polygon 157               4  2.82485e+02      2.55e-07
+polygon 158               7  2.78694e+02      2.52e-07
+polygon 159               4  2.75537e+02      2.49e-07
+polygon 160              18  2.72295e+02      2.46e-07
+polygon 161               4  2.57795e+02      2.33e-07
+polygon 162               4  2.47313e+02      2.23e-07
+polygon 163               4  2.45901e+02      2.22e-07
+polygon 164              14  2.45663e+02      2.22e-07
+polygon 165               4  2.28141e+02      2.06e-07
+polygon 166              16  2.16388e+02      1.95e-07
+polygon 167              13  2.01130e+02      1.82e-07
+polygon 168              13  1.94575e+02      1.76e-07
+polygon 169               4  1.92289e+02      1.74e-07
+polygon 170               6  1.89463e+02      1.71e-07
+polygon 171              20  1.89375e+02      1.71e-07
+polygon 172              11  1.87112e+02      1.69e-07
+polygon 173               4  1.82078e+02      1.64e-07
+polygon 174               5  1.67804e+02      1.51e-07
+polygon 175               8  1.61918e+02      1.46e-07
+polygon 176               4  1.61439e+02      1.46e-07
+polygon 177              12  1.47062e+02      1.33e-07
+polygon 178               9  1.45521e+02      1.31e-07
+polygon 179               9  1.43545e+02      1.30e-07
+polygon 180              17  1.34987e+02      1.22e-07
+polygon 181               4  1.33429e+02      1.20e-07
+polygon 182              10  1.27852e+02      1.15e-07
+polygon 183               4  1.26077e+02      1.14e-07
+polygon 184               4  1.23075e+02      1.11e-07
+polygon 185              13  1.21138e+02      1.09e-07
+polygon 186               8  1.20772e+02      1.09e-07
+polygon 187               4  1.11047e+02      1.00e-07
+polygon 188               9  1.05262e+02      9.50e-08
+polygon 189              10  1.04217e+02      9.41e-08
+polygon 190              12  1.01683e+02      9.18e-08
+polygon 191              16  1.00494e+02      9.07e-08
+polygon 192              11  9.83003e+01      8.87e-08
+polygon 193               4  8.59916e+01      7.76e-08
+polygon 194               4  8.44393e+01      7.62e-08
+polygon 195              22  8.29201e+01      7.49e-08
+polygon 196              14  8.12338e+01      7.33e-08
+polygon 197               3  7.95450e+01      7.18e-08
+polygon 198              10  7.81631e+01      7.06e-08
+polygon 199              10  7.80656e+01      7.05e-08
+polygon 200              11  7.70041e+01      6.95e-08
+polygon 201               9  7.41285e+01      6.69e-08
+polygon 202               8  7.35356e+01      6.64e-08
+polygon 203              11  6.95607e+01      6.28e-08
+polygon 204               6  6.94297e+01      6.27e-08
+polygon 205               7  6.75734e+01      6.10e-08
+polygon 206              10  6.66154e+01      6.01e-08
+polygon 207               7  6.47808e+01      5.85e-08
+polygon 208              10  5.43706e+01      4.91e-08
+polygon 209              12  5.43010e+01      4.90e-08
+polygon 210              10  5.11645e+01      4.62e-08
+polygon 211               4  4.87101e+01      4.40e-08
+polygon 212               7  4.65881e+01      4.21e-08
+polygon 213               7  4.62673e+01      4.18e-08
+polygon 214              12  4.56456e+01      4.12e-08
+polygon 215              12  4.27584e+01      3.86e-08
+polygon 216               3  4.07937e+01      3.68e-08
+polygon 217               9  3.66262e+01      3.31e-08
+polygon 218               8  3.54498e+01      3.20e-08
+polygon 219               3  3.00957e+01      2.72e-08
+polygon 220               9  2.87268e+01      2.59e-08
+polygon 221               6  2.72070e+01      2.46e-08
+polygon 222              11  2.53161e+01      2.29e-08
+polygon 223               8  2.36209e+01      2.13e-08
+polygon 224              11  2.17301e+01      1.96e-08
+polygon 225              15  2.12050e+01      1.91e-08
+polygon 226               7  2.11307e+01      1.91e-08
+polygon 227               9  1.01223e+01      9.14e-09
+polygon 228               5  1.28206e-02      1.16e-11
+polygon 229               3  8.52617e-03      7.70e-12
+polygon 230            8118  1.31536e+08      1.19e-01
+polygon 231 (hole)        5 -6.11195e-02     -5.52e-11
+polygon 232 (hole)        4 -7.71432e-01     -6.96e-10
+polygon 233             544  2.38756e+06      2.16e-03
+polygon 234             450  2.19976e+06      1.99e-03
+polygon 235             192  9.56037e+05      8.63e-04
+polygon 236              45  1.59899e+05      1.44e-04
+polygon 237              35  4.66392e+04      4.21e-05
+polygon 238              21  4.33341e+04      3.91e-05
+polygon 239              26  3.87120e+04      3.49e-05
+polygon 240              30  3.50035e+04      3.16e-05
+polygon 241              29  3.25164e+04      2.94e-05
+polygon 242              14  1.08064e+04      9.76e-06
+polygon 243              11  9.09187e+03      8.21e-06
+polygon 244              10  8.59000e+03      7.76e-06
+polygon 245              20  7.04106e+03      6.36e-06
+polygon 246              11  6.67608e+03      6.03e-06
+polygon 247               8  4.97006e+03      4.49e-06
+polygon 248               8  4.77848e+03      4.31e-06
+polygon 249              34  4.21294e+03      3.80e-06
+polygon 250               9  3.33479e+03      3.01e-06
+polygon 251              17  2.99015e+03      2.70e-06
+polygon 252               9  2.73779e+03      2.47e-06
+polygon 253               6  2.24166e+03      2.02e-06
+polygon 254               7  2.07296e+03      1.87e-06
+polygon 255               7  1.90828e+03      1.72e-06
+polygon 256               5  1.74118e+03      1.57e-06
+polygon 257               8  1.61296e+03      1.46e-06
+polygon 258              55  1.51750e+03      1.37e-06
+polygon 259               7  1.49850e+03      1.35e-06
+polygon 260              17  1.14899e+03      1.04e-06
+polygon 261               6  9.63070e+02      8.69e-07
+polygon 262               7  8.14083e+02      7.35e-07
+polygon 263               7  6.84986e+02      6.18e-07
+polygon 264              36  6.30892e+02      5.70e-07
+polygon 265               8  6.00831e+02      5.42e-07
+polygon 266               5  4.70705e+02      4.25e-07
+polygon 267               5  3.85944e+02      3.48e-07
+polygon 268               6  3.67518e+02      3.32e-07
+polygon 269               6  3.52326e+02      3.18e-07
+polygon 270               4  3.09670e+02      2.80e-07
+polygon 271               4  2.92944e+02      2.64e-07
+polygon 272               5  2.55302e+02      2.30e-07
+polygon 273               4  1.96321e+02      1.77e-07
+polygon 274               4  1.96023e+02      1.77e-07
+polygon 275               5  1.82602e+02      1.65e-07
+polygon 276               4  1.80523e+02      1.63e-07
+polygon 277               4  1.50301e+02      1.36e-07
+polygon 278               3  9.08798e+01      8.20e-08
+polygon 279               3  7.32514e+01      6.61e-08
+polygon 280               3  4.77250e+01      4.31e-08
+polygon 281               3  3.79807e+01      3.43e-08
+polygon 282               3  3.47369e+01      3.14e-08
+polygon 283               3  4.91801e-03      4.44e-12
+polygon 284            1133  1.23129e+07      1.11e-02
+polygon 285 (hole)        3 -3.43431e+00     -3.10e-09
+polygon 286 (hole)       18 -1.37983e+02     -1.25e-07
+polygon 287              49  1.52029e+04      1.37e-05
+polygon 288             117  1.18432e+05      1.07e-04
+polygon 289            1222  9.89924e+06      8.94e-03
+polygon 290               6  1.17937e+02      1.06e-07
+polygon 291               6  1.64006e+01      1.48e-08
+polygon 292               4  4.81589e+00      4.35e-09
+polygon 293            2279  1.86152e+07      1.68e-02
+polygon 294            3075  8.38714e+07      7.57e-02
+polygon 295 (hole)        3 -1.35138e-03     -1.22e-12
+polygon 296             274  3.63312e+05      3.28e-04
+polygon 297             351  8.06076e+04      7.28e-05
+polygon 298              73  5.22152e+04      4.71e-05
+polygon 299              83  1.34533e+04      1.21e-05
+polygon 300              25  1.09380e+04      9.87e-06
+polygon 301              75  6.47002e+03      5.84e-06
+polygon 302              30  2.30958e+03      2.09e-06
+polygon 303              75  1.33738e+03      1.21e-06
+polygon 304               6  1.24937e+03      1.13e-06
+polygon 305              31  5.98645e+02      5.40e-07
+polygon 306              16  5.36042e+02      4.84e-07
+polygon 307              15  4.32601e+02      3.91e-07
+polygon 308              21  4.31177e+02      3.89e-07
+polygon 309              45  3.08884e+02      2.79e-07
+polygon 310              16  1.93393e+02      1.75e-07
+polygon 311              19  1.56792e+02      1.42e-07
+polygon 312              40  1.52696e+02      1.38e-07
+polygon 313              20  1.45173e+02      1.31e-07
+polygon 314              15  1.40826e+02      1.27e-07
+polygon 315              21  1.18481e+02      1.07e-07
+polygon 316              15  1.06343e+02      9.60e-08
+polygon 317              12  9.87637e+01      8.92e-08
+polygon 318              21  9.65208e+01      8.71e-08
+polygon 319              21  8.44004e+01      7.62e-08
+polygon 320              13  6.82927e+01      6.17e-08
+polygon 321              11  4.43975e+01      4.01e-08
+polygon 322               7  2.31612e+01      2.09e-08
+polygon 323               5  5.61153e+00      5.07e-09
+polygon 324               3  1.23706e-02      1.12e-11
+polygon 325            4699  1.40161e+08      1.27e-01
+polygon 326              31  6.84325e+02      6.18e-07
+polygon 327              17  1.62107e+02      1.46e-07
+polygon 328               7  1.54751e+02      1.40e-07
+polygon 329              24  9.86318e+01      8.90e-08
+polygon 330            6091  3.77006e+07      3.40e-02
+polygon 331 (hole)        3 -4.49601e-01     -4.06e-10
+polygon 332             442  1.39822e+06      1.26e-03
+polygon 333             212  2.25325e+05      2.03e-04
+polygon 334              91  1.26749e+05      1.14e-04
+polygon 335             110  5.38170e+04      4.86e-05
+polygon 336              44  3.38506e+04      3.06e-05
+polygon 337              37  2.50015e+04      2.26e-05
+polygon 338              48  1.54073e+04      1.39e-05
+polygon 339              24  1.21196e+04      1.09e-05
+polygon 340              39  6.78777e+03      6.13e-06
+polygon 341              12  4.03869e+03      3.65e-06
+polygon 342              12  1.21163e+03      1.09e-06
+polygon 343               8  6.62219e+02      5.98e-07
+polygon 344               5  3.91987e+02      3.54e-07
+polygon 345               7  3.34004e+02      3.02e-07
+polygon 346              14  1.85010e+02      1.67e-07
+polygon 347              10  1.48224e+02      1.34e-07
+polygon 348              11  1.30416e+02      1.18e-07
+polygon 349               8  1.16411e+02      1.05e-07
+polygon 350               3  5.77369e-04      5.21e-13
+polygon 351               7  5.02602e+02      4.54e-07
+polygon 352               6  6.77496e+01      6.12e-08
+polygon 353              70  3.54724e+04      3.20e-05
+polygon 354              36  2.57679e+04      2.33e-05
+polygon 355              37  1.28752e+04      1.16e-05
+polygon 356              36  4.74223e+01      4.28e-08
+polygon 357              20  2.26019e+02      2.04e-07
+polygon 358              25  2.80040e+01      2.53e-08
+polygon 359              10  1.52220e+01      1.37e-08
+polygon 360               8  1.02109e+01      9.22e-09
+polygon 361             490  1.19672e+06      1.08e-03
+polygon 362              10  3.33987e+01      3.02e-08
+polygon 363              12  4.85108e+01      4.38e-08
+polygon 364              12  2.34522e+01      2.12e-08
+polygon 365              14  4.84192e+01      4.37e-08
+polygon 366              13  3.56201e+01      3.22e-08
+polygon 367             136  5.19022e+04      4.69e-05
+polygon 368              56  3.58639e+03      3.24e-06
+polygon 369              10  1.08541e+02      9.80e-08
+polygon 370              55  2.71039e+04      2.45e-05
+polygon 371              15  2.14847e+02      1.94e-07
+polygon 372               7  2.37758e+03      2.15e-06
+polygon 373              17  4.77062e+03      4.31e-06
+polygon 374              17  1.86343e+02      1.68e-07
+polygon 375               6  4.55785e+01      4.11e-08
+polygon 376               9  1.81625e+01      1.64e-08
+polygon 377              10  4.58814e+01      4.14e-08
+polygon 378              47  3.08664e+03      2.79e-06
+polygon 379               8  6.06639e+01      5.48e-08
+polygon 380              19  7.01377e+02      6.33e-07
+polygon 381              13  6.83719e+01      6.17e-08
+polygon 382              16  5.11960e+01      4.62e-08
+polygon 383              14  5.96205e+01      5.38e-08
+polygon 384              24  3.83672e+02      3.46e-07
+polygon 385               7  3.33167e+01      3.01e-08
+polygon 386              48  5.19572e+04      4.69e-05
+polygon 387              15  1.46197e+02      1.32e-07
+polygon 388             643  3.69663e+06      3.34e-03
+polygon 389               9  3.48719e+01      3.15e-08
+polygon 390              11  5.42736e+01      4.90e-08
+polygon 391              90  4.53460e+04      4.09e-05
+polygon 392               8  1.67832e+01      1.52e-08
+polygon 393              10  6.14272e+01      5.55e-08
+polygon 394               6  2.88961e+01      2.61e-08
+polygon 395               5  2.38396e+01      2.15e-08
+polygon 396              12  1.96357e+02      1.77e-07
+polygon 397              22  4.17044e+02      3.77e-07
+polygon 398             489  7.06662e+05      6.38e-04
+polygon 399             132  5.21563e+04      4.71e-05
+polygon 400              72  1.99768e+04      1.80e-05
+polygon 401               8  9.40746e+01      8.49e-08
+polygon 402             311  1.19326e+06      1.08e-03
+polygon 403             228  4.69782e+05      4.24e-04
+polygon 404              13  1.55838e+02      1.41e-07
+polygon 405              21  4.65158e+02      4.20e-07
+polygon 406               9  1.91239e+01      1.73e-08
+polygon 407              25  7.77060e+02      7.02e-07
+polygon 408              15  4.30511e+01      3.89e-08
+polygon 409              26  3.90704e+02      3.53e-07
+polygon 410               4  2.16800e+02      1.96e-07
+polygon 411             351  1.19249e+06      1.08e-03
+polygon 412              23  3.31784e+02      3.00e-07
+polygon 413              34  3.90838e+02      3.53e-07
+polygon 414              76  4.74815e+02      4.29e-07
+polygon 415               9  1.11071e+01      1.00e-08
+polygon 416              14  1.27985e+02      1.16e-07
+polygon 417              27  1.87301e+02      1.69e-07
+polygon 418              12  1.52537e+02      1.38e-07
+polygon 419              15  3.99714e+01      3.61e-08
+polygon 420              17  1.69307e+04      1.53e-05
+polygon 421               9  1.01842e+02      9.19e-08
+polygon 422              35  7.66255e+04      6.92e-05
+polygon 423            1137  2.44530e+06      2.21e-03
+polygon 424              40  5.12223e+02      4.62e-07
+polygon 425              25  4.42555e+01      4.00e-08
+polygon 426              10  6.69234e+01      6.04e-08
+polygon 427              77  8.09806e+04      7.31e-05
+polygon 428            3371  1.38493e+07      1.25e-02
+polygon 429              36  4.66568e+04      4.21e-05
+polygon 430              19  8.56173e+02      7.73e-07
+polygon 431              57  3.77701e+04      3.41e-05
+polygon 432               4  4.99313e+01      4.51e-08
+polygon 433              49  2.17138e+03      1.96e-06
+polygon 434               9  9.89253e+01      8.93e-08
+polygon 435              17  4.34807e+02      3.93e-07
+polygon 436               6  1.59752e+02      1.44e-07
+polygon 437              19  6.22290e+02      5.62e-07
+polygon 438             507  1.92763e+06      1.74e-03
+polygon 439             923  7.01607e+05      6.33e-04
+polygon 440             243  5.33841e+05      4.82e-04
+polygon 441               9  3.97561e+02      3.59e-07
+polygon 442               7  2.35211e+01      2.12e-08
+polygon 443               7  2.72058e+01      2.46e-08
+polygon 444              10  4.24208e+01      3.83e-08
+polygon 445               9  2.51114e+01      2.27e-08
+polygon 446               7  2.93070e+01      2.65e-08
+polygon 447               9  2.43420e+01      2.20e-08
+polygon 448               6  1.78291e+01      1.61e-08
+polygon 449               9  1.62422e+01      1.47e-08
+polygon 450             238  2.25711e+05      2.04e-04
+polygon 451              19  1.94945e+02      1.76e-07
+polygon 452               6  1.39148e+01      1.26e-08
+polygon 453               7  1.24914e+01      1.13e-08
+polygon 454              40  2.61263e+02      2.36e-07
+polygon 455              17  4.34621e+01      3.92e-08
+polygon 456               7  1.01286e+01      9.14e-09
+polygon 457               6  1.05644e+01      9.54e-09
+polygon 458             148  4.45409e+04      4.02e-05
+polygon 459              19  1.24464e+03      1.12e-06
+polygon 460              50  2.33422e+04      2.11e-05
+polygon 461               9  3.27328e+01      2.96e-08
+polygon 462               9  3.01348e+01      2.72e-08
+polygon 463              11  2.39579e+01      2.16e-08
+polygon 464             485  9.67688e+05      8.74e-04
+polygon 465              17  6.65119e+01      6.00e-08
+polygon 466            8489  1.32770e+08      1.20e-01
+polygon 467 (hole)        3 -1.23988e-04     -1.12e-13
+polygon 468             194  1.38709e+06      1.25e-03
+polygon 469             488  1.44760e+07      1.31e-02
+polygon 470            1548  9.37363e+06      8.46e-03
+polygon 471               4  4.53380e+02      4.09e-07
+polygon 472              71  1.85586e+04      1.68e-05
+polygon 473             577  6.98927e+06      6.31e-03
+polygon 474               9  4.80776e+02      4.34e-07
+polygon 475               8  3.50193e+02      3.16e-07
+polygon 476               7  6.22027e+02      5.62e-07
+polygon 477               6  4.95033e+02      4.47e-07
+polygon 478              12  2.15496e+02      1.95e-07
+polygon 479              12  4.90722e+02      4.43e-07
+polygon 480              57  1.29769e+04      1.17e-05
+polygon 481              13  6.40371e+02      5.78e-07
+polygon 482               4  6.52049e-01      5.89e-10
+polygon 483             584  1.06922e+07      9.65e-03
+polygon 484            1078  1.26332e+07      1.14e-02
+polygon 485               3  1.43642e-01      1.30e-10
+polygon 486              52  2.79202e+04      2.52e-05
+polygon 487              81  2.96554e+04      2.68e-05
+polygon 488            1490  1.29618e+07      1.17e-02
+polygon 489             825  9.67328e+05      8.73e-04
+polygon 490               4  2.57652e-02      2.33e-11
+polygon 491            3848  4.84467e+07      4.37e-02
+polygon 492              24  3.62301e+03      3.27e-06
+polygon 493              21  1.96176e+04      1.77e-05
+polygon 494              28  4.76927e+02      4.31e-07
+polygon 495             362  3.56358e+04      3.22e-05
+polygon 496             367  5.91302e+04      5.34e-05
+polygon 497               7  2.59469e+01      2.34e-08
+polygon 498              10  9.61126e+01      8.68e-08
+polygon 499              15  9.08542e+01      8.20e-08
+polygon 500              12  2.32528e+02      2.10e-07
+polygon 501              25  1.03250e+03      9.32e-07
+polygon 502               9  2.43616e+01      2.20e-08
+polygon 503               7  2.88779e+01      2.61e-08
+polygon 504              17  2.37097e+02      2.14e-07
+polygon 505               7  1.01855e+01      9.20e-09
+polygon 506               8  5.73968e+00      5.18e-09
+polygon 507              19  9.26957e+01      8.37e-08
+polygon 508               8  9.00682e+01      8.13e-08
+polygon 509              27  3.82914e+02      3.46e-07
+polygon 510              11  7.04646e+01      6.36e-08
+polygon 511              13  5.14988e+01      4.65e-08
+polygon 512               7  3.50834e+01      3.17e-08
+polygon 513              11  2.40764e+01      2.17e-08
+polygon 514               9  7.22580e+00      6.52e-09
+polygon 515              11  3.23106e+01      2.92e-08
+polygon 516              12  1.27507e+01      1.15e-08
+polygon 517               6  2.68020e+01      2.42e-08
+polygon 518              19  3.40915e+01      3.08e-08
+polygon 519              16  9.74248e+03      8.80e-06
+polygon 520              15  8.62567e+02      7.79e-07
+polygon 521              24  9.47027e+03      8.55e-06
+polygon 522            4771  4.98275e+07      4.50e-02
+polygon 523               7  6.38100e+01      5.76e-08
+polygon 524              27  4.68693e+04      4.23e-05
+polygon 525              23  1.92259e+02      1.74e-07
+polygon 526              25  3.82828e+02      3.46e-07
+polygon 527              12  1.96990e+01      1.78e-08
+polygon 528              37  2.72982e+03      2.46e-06
+polygon 529               9  6.80039e+01      6.14e-08
+polygon 530               8  1.91835e+01      1.73e-08
+polygon 531               8  4.05109e+01      3.66e-08
+polygon 532              92  9.79067e+03      8.84e-06
+polygon 533             688  1.69374e+06      1.53e-03
+polygon 534               4  2.90504e+01      2.62e-08
+polygon 535               8  6.22234e+01      5.62e-08
+polygon 536               5  1.60025e+02      1.44e-07
+polygon 537               4  2.42622e+01      2.19e-08
+polygon 538               5  2.30873e+01      2.08e-08
+polygon 539               7  9.49956e+00      8.58e-09
+polygon 540              24  5.91828e+02      5.34e-07
+polygon 541               7  5.09348e+01      4.60e-08
+polygon 542               5  1.51300e+01      1.37e-08
+polygon 543               5  3.03832e+01      2.74e-08
+polygon 544               6  7.48678e+01      6.76e-08
+polygon 545               8  2.59836e+02      2.35e-07
+polygon 546              28  1.28945e+03      1.16e-06
+polygon 547              21  6.76380e+02      6.11e-07
+polygon 548               6  4.07393e+01      3.68e-08
+polygon 549               5  4.18869e+01      3.78e-08
+polygon 550             286  4.45181e+05      4.02e-04
+polygon 551               7  3.92215e+02      3.54e-07
+polygon 552            7093  9.48148e+07      8.56e-02
+polygon 553             280  1.16336e+06      1.05e-03
+polygon 554            5036  6.91720e+07      6.24e-02
+enclosing rectangle: [801026, 863539.9] x [801678, 846903.1] units
+                     (62510 x 45230 units)
+Window area = 1107650000 square units
+Fraction of frame area: 0.392</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hk_cp_ppp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="second-point-spatial-analysis" class="level1">
+<h1>5. Second Point Spatial Analysis</h1>
+<p>In this section of performing second point spatial analysis, we will be studying the interactions between the recycling stations (the points). By computing the G-function, F-function, K-function and L-function it will provide us insight about how dispersed/clustered are these points, the distance between them and on average how many points are there in an area. These information will be helpful for us to understand the patterns of these recycling stations in Hong Kong to:</p>
+<ol type="1">
+<li><p>Identify areas with a high concentration of stations.</p></li>
+<li><p>Allocate resources more efficiently.</p></li>
+<li><p>Identify gaps in recycling infrastructure and areas with limited access to recycling services.</p></li>
+<li><p>Government officials can work together with community organizations, businesses, and residents to develop and implement effective recycling programs tailored to the specific needs of each area.</p></li>
+</ol>
+<p>We are rescaling point patterns to a new unit of distance to allow for easier interpretation of the spatial distribution of points in kilometers rather than the original units.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>hk_cp_ppp.km <span class="ot">=</span> <span class="fu">rescale</span>(hk_cp_ppp, <span class="dv">1000</span>, <span class="st">"km"</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>yaumatei_cp_ppp.km <span class="ot">=</span> <span class="fu">rescale</span>(yaumatei_cp_ppp, <span class="dv">1000</span>, <span class="st">"km"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>))</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(hk_cp_ppp.km)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(yaumatei_cp_ppp.km)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="analysing-spatial-point-process-using-g-function" class="level2">
+<h2 class="anchored" data-anchor-id="analysing-spatial-point-process-using-g-function">5.1 Analysing Spatial Point Process Using G-Function</h2>
+<p>G-function tells us how evenly events are spread out by measuring the distances between each event and its nearest neighbor event. In this case of using hk_cp_ppp which is analysing whole of Hong Kong recycling stations.</p>
+<section id="computing-g-function-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="computing-g-function-estimation">5.1.1 Computing G-function Estimation</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>G_HK <span class="ot">=</span> <span class="fu">Gest</span>(hk_cp_ppp, <span class="at">correction =</span> <span class="st">"border"</span>)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(G_HK, <span class="at">xlim=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">500</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="performing-complete-spatial-randomness-test" class="level3">
+<h3 class="anchored" data-anchor-id="performing-complete-spatial-randomness-test">5.1.2 Performing Complete Spatial Randomness Test</h3>
+<p>To confirm the observed spatial patterns above, we conduct a hypothesis test.</p>
+<p>Ho = The distribution of recycling stations in Hong Kong are randomly distributed.</p>
+<p>H1= The distribution of recycling stations in Hong Kong are not randomly distributed.</p>
+<p>The null hypothesis will be rejected if p-value is smaller than alpha value of 0.001.</p>
+<p>Monte Carlo test with G-function</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>G_HK.csr <span class="ot">&lt;-</span> <span class="fu">envelope</span>(hk_cp_ppp, Gest, <span class="at">nsim =</span> <span class="dv">99</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(G_HK.csr, <span class="st">"data/rds/G_HK.csr.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>G_HK.csr <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/G_HK.csr.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(G_HK.csr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-40-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Given that the observed G-function line consistently exceeds the upper and lower envelope, it indicates significant clustering of most recycling points in Hong Kong that are closer together or further apart more often than they would be if their locations were completely random, this suggests a departure from CSR.</p>
+<p>Next, given the observed G-values fall outside the envelope boundaries at 0.001 significance level, we may conclude that the spatial pattern of recycling points in Hong Kong is significantly different from CSR.</p>
+<p>Lastly, given that the observed G-function line consistently exceeds the upper and lower envelopes, indicating significant clustering of recycling points in Hong Kong, and that the observed G-values fall outside the envelope boundaries at a significance level of 0.001, we would reject the null hypothesis H0.</p>
+</section>
+</section>
+<section id="analysing-spatial-point-process-using-f-function" class="level2">
+<h2 class="anchored" data-anchor-id="analysing-spatial-point-process-using-f-function">5.2 Analysing Spatial Point Process Using F-Function</h2>
+<p>F function helps us understand the pattern of empty space around points, and the hazard rate helps us understand how quickly that space gets filled up as we move away from the points.</p>
+<section id="computing-f-function-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="computing-f-function-estimation">5.2.1 Computing F-function estimation</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>F_HK <span class="ot">=</span> <span class="fu">Fest</span>(hk_cp_ppp)</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(F_HK)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-41-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="performing-complete-spatial-randomness-test-1" class="level3">
+<h3 class="anchored" data-anchor-id="performing-complete-spatial-randomness-test-1">5.2.2 Performing Complete Spatial Randomness Test</h3>
+<p>To confirm the observed spatial patterns above, a hypothesis test will be conducted. The hypothesis and test are as follows:</p>
+<p>Ho = The distribution of recycling points in Hong Kong are randomly distributed.</p>
+<p>H1= The distribution of recycling points in Hong Kong are not randomly distributed.</p>
+<p>The null hypothesis will be rejected if p-value is smaller than alpha value of 0.001.</p>
+<p>Monte Carlo test with F-function</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>F_HK.csr <span class="ot">&lt;-</span> <span class="fu">envelope</span>(hk_cp_ppp, Fest, <span class="at">nsim =</span> <span class="dv">99</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(F_HK.csr, <span class="st">"data/rds/F_HK.csr.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>F_HK.csr <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/F_HK.csr.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(F_HK.csr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-45-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Given the observed F-function falls below the envelopes, this suggests dispersion, meaning that the recycling points are further apart than would be expected under CSR in Hong Kong.</p>
+<p>Additionally, the theoretical F-function consistently falls above the observed F-function line and the envelopes are also around the theoretical F-function line, this suggests that the observed spatial pattern of recycling points in Hong Kong is exhibiting clustering or aggregation. Computing the F-function has also provided us insight into G-function, as now we know the points are more clustered than dispersed in Hong Kong.</p>
+<p>The evidence suggests that the distribution of recycling points in Hong Kong is not randomly distributed therefore we reject H0.</p>
+</section>
+</section>
+<section id="analysing-spatial-point-process-using-k-function" class="level2">
+<h2 class="anchored" data-anchor-id="analysing-spatial-point-process-using-k-function">5.3 Analysing Spatial Point Process Using K-Function</h2>
+<p>K-function measures the number of events found up to a given distance of any particular event. In other words, the K-function here measures how many recycling points are there around a particular recycling point up to a given distance.</p>
+<p><strong>Disclaimer:</strong> For computing K-function and L-function, the code is unable to run the whole dataset of Hong Kong unlike G-function and F-function. So for computing K-function and L-function, we can only examine it by each district area. In our case for computing K-function and L-function, we are using Yau Ma Tei.</p>
+<section id="computing-k-function-estimate" class="level3">
+<h3 class="anchored" data-anchor-id="computing-k-function-estimate">5.3.1 Computing K-function estimate</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>K_ymt <span class="ot">=</span> <span class="fu">Kest</span>(yaumatei_cp_ppp, <span class="at">correction =</span> <span class="st">"Ripley"</span>)</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(K_ymt, . <span class="sc">-</span>r <span class="sc">~</span> r, <span class="at">ylab=</span> <span class="st">"K(d)-r"</span>, <span class="at">xlab =</span> <span class="st">"d(m)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-46-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="performing-complete-spatial-randomness-test-2" class="level3">
+<h3 class="anchored" data-anchor-id="performing-complete-spatial-randomness-test-2">5.3.2 Performing Complete Spatial Randomness Test</h3>
+<p>To confirm the observed spatial patterns above, a hypothesis test will be conducted. The hypothesis and test are as follows:</p>
+<p>Ho = The distribution of recycling points in Yau Ma Tei are randomly distributed.</p>
+<p>H1= The distribution of recycling points in Yau Ma Tei are not randomly distributed.</p>
+<p>The null hypothesis will be rejected if p-value is smaller than alpha value of 0.001.</p>
+<p>The code chunk below is used to perform the hypothesis testing.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>K_ymt.csr <span class="ot">&lt;-</span> <span class="fu">envelope</span>(yaumatei_cp_ppp, Kest, <span class="at">nsim =</span> <span class="dv">99</span>, <span class="at">rank =</span> <span class="dv">1</span>, <span class="at">glocal=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(K_ymt.csr, <span class="st">"data/rds/K_ymt.csr.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>K_ymt.csr <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/K_ymt.csr.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(K_ymt.csr, . <span class="sc">-</span> r <span class="sc">~</span> r, <span class="at">xlab=</span><span class="st">"d"</span>, <span class="at">ylab=</span><span class="st">"K(d)-r"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-50-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Given that both the observed and theoretical K-function lines fall within the upper and lower envelopes, this suggests that the spatial pattern of recycling points observed in the yaumatei data is consistent with complete spatial randomness.</p>
+<p>Also, this indicates that there is no significant deviation of the recycling points between the observed pattern and the pattern expected under CSR.</p>
+<p>Therefore, in the district of Yau Ma Tei, there is no evidence of clustering or dispersion beyond what would be expected by chance alone. Therefore, we do not reject H0.</p>
+</section>
+</section>
+<section id="analysing-spatial-point-process-using-l-function" class="level2">
+<h2 class="anchored" data-anchor-id="analysing-spatial-point-process-using-l-function">5.4 Analysing Spatial Point Process Using L-Function</h2>
+<p>L-function is a measure commonly used in spatial statistics to assess the degree of clustering or dispersion of point patterns. It measures the average number of points found within a given distance r of each point in the dataset, relative to what would be expected under complete spatial randomness (CSR).</p>
+<p><strong>Disclaimer:</strong> For computing K-function and L-function, the code is unable to run the whole dataset of Hong Kong unlike G-function and F-function. So for computing K-function and L-function, we can only examine it by each district area. In our case for computing K-function and L-function, we are using Yau Ma Tei.</p>
+<section id="computing-l-function-estimation" class="level3">
+<h3 class="anchored" data-anchor-id="computing-l-function-estimation">5.4.1 Computing L-function estimation</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>L_ymt <span class="ot">=</span> <span class="fu">Lest</span>(yaumatei_cp_ppp, <span class="at">correction =</span> <span class="st">"Ripley"</span>)</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(L_ymt, . <span class="sc">-</span>r <span class="sc">~</span> r, </span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab=</span> <span class="st">"L(d)-r"</span>, <span class="at">xlab =</span> <span class="st">"d(m)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-51-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="performing-complete-spatial-randomness-test-3" class="level3">
+<h3 class="anchored" data-anchor-id="performing-complete-spatial-randomness-test-3">5.4.2 Performing Complete Spatial Randomness Test</h3>
+<p>To confirm the observed spatial patterns above, a hypothesis test will be conducted. The hypothesis and test are as follows:</p>
+<p>Ho = The distribution of recycling points in Yau Ma Tei are randomly distributed.</p>
+<p>H1= The distribution of recycling points in Yau Ma Tei are not randomly distributed.</p>
+<p>The null hypothesis will be rejected if p-value is smaller than alpha value of 0.001.</p>
+<p>The code chunk below is used to perform the hypothesis testing.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>L_ymt.csr <span class="ot">&lt;-</span> <span class="fu">envelope</span>(yaumatei_cp_ppp, Lest, <span class="at">nsim =</span> <span class="dv">99</span>, <span class="at">rank =</span> <span class="dv">1</span>, <span class="at">glocal=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(L_ymt.csr, <span class="st">"data/rds/L_ymt.csr.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>L_ymt.csr <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/L_ymt.csr.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(L_ymt.csr, . <span class="sc">-</span> r <span class="sc">~</span> r, <span class="at">xlab=</span><span class="st">"d"</span>, <span class="at">ylab=</span><span class="st">"L(d)-r"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-55-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Given both the observed and theoretical L-function lines fall within the upper and lower envelopes, it suggests that the spatial pattern of recycling points observed in the data is consistent with complete spatial randomness. This means that the distribution of recycling points is similar to what would be expected if the points were randomly distributed across the study area.</p>
+<p>Therefore, we do not reject the null hypothesis, H0, as the random distribution of points given both the observed and theoretical L-function lines fall within the upper and lower envelopes.</p>
+<p>Additionally, the significance level in this case, would be high. Any deviations between the observed and theoretical patterns are likely due to random chance rather than any systematic spatial pattern.</p>
+</section>
+</section>
+</section>
+<section id="observations-concluded" class="level1">
+<h1>6. Observations Concluded</h1>
+<p>Looking at our findings, we can conclude that most of the recycling points in Hong Kong are clustered. We can conclude this from the results of the G-function and F-function that the recycling points in Hong Kong are not randomly distributed and this evidence is further corroborated from the ppp graph on Section 4.2. We can observe that the darker areas have many recycling points which means they are clustered in certain areas of Hong Kong.</p>
+<p>On the other hand, our K-function and L-function analysis on Yau Ma Tei has shown us that some districts in Hong Kong their recycling stations are randomly distributed and dispersed evenly. This is also corroborated in Section 4.1 where we can observe the whole area of Yau Ma Tei, it shows us that the recycling stations are really dispersed randomly and you can find a recycling station in many corners of Yau Ma Tei.</p>
+<p>This proves that while most of the recycling stations in Hong Kong are clustered but there are still districts where the recycling stations are fairly dispersed, we cannot use conclude that all areas of Hong Kong recycling stations do not follow CSR.</p>
+<p>This gives rise to the opinion that an in-depth analysis into each district of Hong Kong would be more helpful and meaningful for government officials. This is because using an over arching analysis may not reveal the real situation in Hong Kong as each region is different, by delving into each district we get to understand the different reasons that are causing the clustering of recycling points and how is it affect citizens’ habit to recycle. Afterwards, respective actions can be taken for different regions due to the different recycling points outlays.</p>
+<p>Furthermore, there are areas in Hong Kong that do not have many recycling stations simply because those are mountain or farm areas, not a lot recycling stations are required as well as their lifestyle is not like city life where consumption is high, they live a sedentary lifestyle.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
