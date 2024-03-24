@@ -1,18 +1,463 @@
 ---
-title: "Take-Home Exercise 3: Hong Kong GREEN@ Recyclable Collection Points Spatial Point Patterns Analysis"
-date: "March 13, 2024"
+title: "Analysing the Recycling Stations in Hong Kong using Exploratory Data Analysis (EDA) & Second Point Spatial Analysis"
+format: html
 date-modified: "last-modified"
-format: 
-  html:
-    fontsize: 18px
-execute:
-  echo: true
-  eval: true
-  freeze: true
+execute:  
   warning: false
-  message: false
-  fig_retine: 3
-editor: visual
+  freeze: true
+  message: false 
+  eval: true 
+  echo: true 
+  fig-retine: 3
+date: "`r Sys.Date()`"
 ---
 
+# Home Page
 
+![](images/clipboard-3889418583.png)
+
+### Visualization Page
+
+This will be the Visualization Tab where users are able to have idea of the locations of Green\@Community recycling points. We have include some interaction features such as drop-down menu for them to select their desirable districts and recyclables that they want to recycle.
+
+![](images/clipboard-690793078.png)
+
+## Analysis Pages: SPAA & NETSPAA
+
+The following 2 pages also include interactive feature such as drop-down menu for the districts that we do our analysis on.
+
+![](images/clipboard-805621792.png)
+
+![](images/clipboard-2302619658.png)
+
+# 1. Loading the Data
+
+```{r}
+pacman::p_load(arrow, lubridate, maptools, sp, sf, raster, spatstat, tmap, classInt, viridis, tidyverse, spNetwork, readxl)
+```
+
+# 2. Importing the Data
+
+This aspatial dataset is the 2021 Population Census Statistics (By District Council District) in Hong Kong, taken from "https://data.gov.hk/en-data/dataset/hk-censtatd-census_geo-2021-population-census-by-dcd/resource/27beef7f-5995-4b79-b3a9-26352c852fda". This dataset provides information recorded about the population of Hong Kong, state, city, or other well-defined geographical areas
+
+```{r}
+hk_census <- read_excel("data/aspatial/hkcensus.xlsx")
+```
+
+This second aspatial dataset is the Waste Less Recycling Collection Point (By Environmental Protection Department). It is from "https://data.gov.hk/en-data/dataset/hk-epd-recycteam-waste-less-recyclable-collection-points-data".
+
+We will be using this dataset heavily to study the recycling points in Hong Kong, understanding how dispersed or clustered the recycling stations are in Hong Kong.
+
+```{r}
+cp <- read_csv("data/aspatial/hkrecyclepoints.csv") 
+```
+
+We are going to group the cp dataset by the legend as there are various different kinds of recycling stations, by grouping them into the type of recycling stations we can make more meaningful analysis about the recycling stations around Hong Kong and how the location of these recycling stations might be too clustered in one area and certain areas need more or less recycling stations.
+
+```{r}
+cp <- cp %>%
+  group_by(legend)
+```
+
+We are changing the coordinate system of cp dataset so that we can project the points on the graph later, we will convert it to WGS84 then Hong Kong coordinate system (2326)
+
+```{r}
+cp_sf <- st_as_sf(cp, 
+                  coords = c("lgt","lat"), 
+                  crs = 4326) %>%
+  st_transform(crs=2326)
+cp_sf
+```
+
+This dataset, district_18 dataset which is the Land area, mid-year population and population density (By District Council district) from "https://portal.csdi.gov.hk/geoportal/#metadataInfoPanel".
+
+We will be using this dataset to reflect the recycling points in Hong Kong as it is clearer and provides us more meaningful insight.
+
+```{r}
+district_18 <- st_read(dsn = "data/geospatial/hk_18Districts/",
+                       layer = "HKDistrict18" )
+district_18
+```
+
+We need to transform the coordinate system to Hong Kong's one in order to reflect the points on it later.
+
+```{r}
+district_18 <- district_18 %>%
+  st_transform(crs = 2326)
+
+district_18
+```
+
+We have also included yaumatei geographical dataset because certain analysis we will be making later is unable to take in the whole geographic location of Hong Kong but a certain district, as such we chose Yau Ma Tei. This dataset is taken from "https://www.ozp.tpb.gov.hk/" where you can extract certain geographical outlines/boundaries of the area of Hong Kong you are interested in.
+
+```{r}
+yaumatei <- st_read(dsn = "data/geospatial/yaumatei")
+```
+
+```{r}
+st_crs(yaumatei)
+```
+
+# 3. Plotting out the datasets
+
+```{r}
+plot(st_geometry(district_18))
+```
+
+```{r}
+cp_sf <- cp_sf %>%
+  st_union() 
+
+plot(cp_sf)
+```
+
+```{r}
+yaumatei_sf <- st_as_sf(yaumatei, 
+                  coords = c("Shape_Leng","Shape_Area"), 
+                  crs = 4326) %>%
+  st_transform(crs=2326)
+```
+
+```{r}
+yaumatei_sf <- yaumatei_sf %>%
+  st_union() 
+```
+
+```{r}
+plot(yaumatei_sf)
+```
+
+Recycling points scattered around HK:
+
+```{r}
+tmap_mode('plot')
+tm_shape(cp_sf)+
+  tm_dots()
+```
+
+# 4. Owin Object
+
+Creating Owin Object for the 18 districts in Hong Kong.
+
+Converting sf format for district_18 into spatial class the sp format because you cannot do it directly.
+
+```{r}
+district_18_sp <- as_Spatial(district_18)
+```
+
+Spatstat requires the analytical data to be in ppp object form, but since there is no way to directly convert a Spatial\* classes into ppp object, we’ll need to convert the Spatial\* classes into a generic Spatial object first, then convert the generic sp object into ppp object form.
+
+```{r}
+district_18_sp <- as(district_18_sp, "SpatialPolygons")
+```
+
+Checking the newly-converted Spatial classes
+
+```{r}
+district_18_sp
+```
+
+We are now confining the analysis with a geographical area. In spatstat, the object called owin is specially designed to represent this polygonal region. This produces the Hong Kong layer of the 18 districts.
+
+```{r}
+district_18_owin <- as(district_18_sp, "owin")
+```
+
+```{r}
+plot(district_18_owin)
+```
+
+```{r}
+summary(district_18_owin)
+```
+
+These 2 code chunks below is converting a spatial dataset named “cp_sf” into a format suitable for analyzing and studying point patterns to reflect the data onto the geographical regions we are interested in.
+
+```{r}
+cp_sf <- cp_sf %>% st_transform(crs = 2326)
+```
+
+```{r}
+cp_ppp <- as.ppp(cp_sf)
+```
+
+## 4.1 Creating Owin Object for Yau Ma Tei
+
+As mentioned in Section 1 when loading the datasets, as we can only analyse a certain area of Hong Kong due to the size of the dataset, we also have to create an owin object for Yau Ma Tei similar to district_18.
+
+```{r}
+yaumatei_sp <- as_Spatial(yaumatei)
+```
+
+```{r}
+yaumatei_sp <- as(yaumatei_sp, "SpatialPolygons")
+```
+
+```{r}
+yaumatei_sp
+```
+
+```{r}
+yaumatei_owin <- as(yaumatei_sp, "owin")
+```
+
+```{r}
+plot(yaumatei_owin)
+```
+
+```{r}
+summary(yaumatei_owin)
+```
+
+These 2 code chunks below, we are reflecting the recycling points in cp_ppp onto the geographical location of yaumatei_owin, plotting yaumatei_cp_ppp shows us how dispersed are these recycling points in Yau Ma Tei only.
+
+```{r}
+yaumatei_cp_ppp = cp_ppp[yaumatei_owin]
+summary(yaumatei_cp_ppp)
+```
+
+```{r}
+plot(yaumatei_cp_ppp)
+```
+
+## 4.2 HK_CP_PPP
+
+These 2 code chunks below, we are reflecting the recycling points in cp_ppp onto the geographical location of district_18_owin, plotting hk_cp_ppp shows us how dispersed are these recycling points in the whole of Hong Kong.
+
+```{r}
+hk_cp_ppp = cp_ppp[district_18_owin]
+summary(hk_cp_ppp)
+```
+
+```{r}
+plot(hk_cp_ppp)
+```
+
+# 5. Second Point Spatial Analysis
+
+In this section of performing second point spatial analysis, we will be studying the interactions between the recycling stations (the points). By computing the G-function, F-function, K-function and L-function it will provide us insight about how dispersed/clustered are these points, the distance between them and on average how many points are there in an area. These information will be helpful for us to understand the patterns of these recycling stations in Hong Kong to:
+
+1.  Identify areas with a high concentration of stations.
+
+2.  Allocate resources more efficiently.
+
+3.  Identify gaps in recycling infrastructure and areas with limited access to recycling services.
+
+4.  Government officials can work together with community organizations, businesses, and residents to develop and implement effective recycling programs tailored to the specific needs of each area.
+
+We are rescaling point patterns to a new unit of distance to allow for easier interpretation of the spatial distribution of points in kilometers rather than the original units.
+```{r}
+hk_cp_ppp.km = rescale(hk_cp_ppp, 1000, "km")
+yaumatei_cp_ppp.km = rescale(yaumatei_cp_ppp, 1000, "km")
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(hk_cp_ppp.km)
+plot(yaumatei_cp_ppp.km)
+```
+
+## 5.1 Analysing Spatial Point Process Using G-Function
+
+G-function tells us how evenly events are spread out by measuring the distances between each event and its nearest neighbor event. In this case of using hk_cp_ppp which is analysing whole of Hong Kong recycling stations.
+
+### 5.1.1 Computing G-function Estimation
+
+```{r}
+G_HK = Gest(hk_cp_ppp, correction = "border")
+plot(G_HK, xlim=c(0,500))
+```
+
+### 5.1.2 Performing Complete Spatial Randomness Test
+
+To confirm the observed spatial patterns above, we conduct a hypothesis test.
+
+Ho = The distribution of recycling stations in Hong Kong are randomly distributed.
+
+H1= The distribution of recycling stations in Hong Kong are not randomly distributed.
+
+The null hypothesis will be rejected if p-value is smaller than alpha value of 0.001.
+
+Monte Carlo test with G-function
+
+```{r}
+#| eval: false
+G_HK.csr <- envelope(hk_cp_ppp, Gest, nsim = 99)
+```
+
+```{r}
+#| eval: false
+write_rds(G_HK.csr, "data/rds/G_HK.csr.rds")
+```
+
+```{r}
+G_HK.csr <- read_rds("data/rds/G_HK.csr.rds")
+```
+
+```{r}
+plot(G_HK.csr)
+```
+
+Given that the observed G-function line consistently exceeds the upper and lower envelope, it indicates significant clustering of most recycling points in Hong Kong that are closer together or further apart more often than they would be if their locations were completely random, this suggests a departure from CSR.
+
+Next, given the observed G-values fall outside the envelope boundaries at 0.001 significance level, we may conclude that the spatial pattern of recycling points in Hong Kong is significantly different from CSR.
+
+Lastly, given that the observed G-function line consistently exceeds the upper and lower envelopes, indicating significant clustering of recycling points in Hong Kong, and that the observed G-values fall outside the envelope boundaries at a significance level of 0.001, we would reject the null hypothesis H0.
+
+## 5.2 Analysing Spatial Point Process Using F-Function
+
+F function helps us understand the pattern of empty space around points, and the hazard rate helps us understand how quickly that space gets filled up as we move away from the points.
+
+### 5.2.1 Computing F-function estimation
+
+```{r}
+F_HK = Fest(hk_cp_ppp)
+plot(F_HK)
+```
+
+### 5.2.2 Performing Complete Spatial Randomness Test
+
+To confirm the observed spatial patterns above, a hypothesis test will be conducted. The hypothesis and test are as follows:
+
+Ho = The distribution of recycling points in Hong Kong are randomly distributed.
+
+H1= The distribution of recycling points in Hong Kong are not randomly distributed.
+
+The null hypothesis will be rejected if p-value is smaller than alpha value of 0.001.
+
+Monte Carlo test with F-function
+
+```{r}
+#| eval: false
+F_HK.csr <- envelope(hk_cp_ppp, Fest, nsim = 99)
+```
+
+```{r}
+#| eval: false
+write_rds(F_HK.csr, "data/rds/F_HK.csr.rds")
+```
+
+```{r}
+F_HK.csr <- read_rds("data/rds/F_HK.csr.rds")
+```
+
+```{r}
+plot(F_HK.csr)
+```
+
+Given the observed F-function falls below the envelopes, this suggests dispersion, meaning that the recycling points are further apart than would be expected under CSR in Hong Kong.
+
+Additionally, the theoretical F-function consistently falls above the observed F-function line and the envelopes are also around the theoretical F-function line, this suggests that the observed spatial pattern of recycling points in Hong Kong is exhibiting clustering or aggregation. Computing the F-function has also provided us insight into G-function, as now we know the points are more clustered than dispersed in Hong Kong.
+
+The evidence suggests that the distribution of recycling points in Hong Kong is not randomly distributed therefore we reject H0.
+
+## 5.3 Analysing Spatial Point Process Using K-Function
+
+K-function measures the number of events found up to a given distance of any particular event. In other words, the K-function here measures how many recycling points are there around a particular recycling point up to a given distance.
+
+**Disclaimer:** For computing K-function and L-function, the code is unable to run the whole dataset of Hong Kong unlike G-function and F-function. So for computing K-function and L-function, we can only examine it by each district area. In our case for computing K-function and L-function, we are using Yau Ma Tei.
+
+### 5.3.1 Computing K-function estimate
+
+```{r}
+K_ymt = Kest(yaumatei_cp_ppp, correction = "Ripley")
+plot(K_ymt, . -r ~ r, ylab= "K(d)-r", xlab = "d(m)")
+```
+
+### 5.3.2 Performing Complete Spatial Randomness Test
+
+To confirm the observed spatial patterns above, a hypothesis test will be conducted. The hypothesis and test are as follows:
+
+Ho = The distribution of recycling points in Yau Ma Tei are randomly distributed.
+
+H1= The distribution of recycling points in Yau Ma Tei are not randomly distributed.
+
+The null hypothesis will be rejected if p-value is smaller than alpha value of 0.001.
+
+The code chunk below is used to perform the hypothesis testing.
+
+```{r}
+#| eval: false
+K_ymt.csr <- envelope(yaumatei_cp_ppp, Kest, nsim = 99, rank = 1, glocal=TRUE)
+```
+
+```{r}
+#| eval: false
+write_rds(K_ymt.csr, "data/rds/K_ymt.csr.rds")
+```
+
+```{r}
+K_ymt.csr <- read_rds("data/rds/K_ymt.csr.rds")
+```
+
+```{r}
+plot(K_ymt.csr, . - r ~ r, xlab="d", ylab="K(d)-r")
+```
+
+Given that both the observed and theoretical K-function lines fall within the upper and lower envelopes, this suggests that the spatial pattern of recycling points observed in the yaumatei data is consistent with complete spatial randomness.
+
+Also, this indicates that there is no significant deviation of the recycling points between the observed pattern and the pattern expected under CSR.
+
+Therefore, in the district of Yau Ma Tei, there is no evidence of clustering or dispersion beyond what would be expected by chance alone. Therefore, we do not reject H0.
+
+## 5.4 Analysing Spatial Point Process Using L-Function
+
+L-function is a measure commonly used in spatial statistics to assess the degree of clustering or dispersion of point patterns. It measures the average number of points found within a given distance r of each point in the dataset, relative to what would be expected under complete spatial randomness (CSR).
+
+**Disclaimer:** For computing K-function and L-function, the code is unable to run the whole dataset of Hong Kong unlike G-function and F-function. So for computing K-function and L-function, we can only examine it by each district area. In our case for computing K-function and L-function, we are using Yau Ma Tei.
+
+### 5.4.1 Computing L-function estimation
+
+```{r}
+L_ymt = Lest(yaumatei_cp_ppp, correction = "Ripley")
+plot(L_ymt, . -r ~ r, 
+     ylab= "L(d)-r", xlab = "d(m)")
+```
+
+### 5.4.2 Performing Complete Spatial Randomness Test
+
+To confirm the observed spatial patterns above, a hypothesis test will be conducted. The hypothesis and test are as follows:
+
+Ho = The distribution of recycling points in Yau Ma Tei are randomly distributed.
+
+H1= The distribution of recycling points in Yau Ma Tei are not randomly distributed.
+
+The null hypothesis will be rejected if p-value is smaller than alpha value of 0.001.
+
+The code chunk below is used to perform the hypothesis testing.
+
+```{r}
+#| eval: false
+L_ymt.csr <- envelope(yaumatei_cp_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
+```
+
+```{r}
+#| eval: false
+write_rds(L_ymt.csr, "data/rds/L_ymt.csr.rds")
+```
+
+```{r}
+L_ymt.csr <- read_rds("data/rds/L_ymt.csr.rds")
+```
+
+```{r}
+plot(L_ymt.csr, . - r ~ r, xlab="d", ylab="L(d)-r")
+```
+
+Given both the observed and theoretical L-function lines fall within the upper and lower envelopes, it suggests that the spatial pattern of recycling points observed in the data is consistent with complete spatial randomness. This means that the distribution of recycling points is similar to what would be expected if the points were randomly distributed across the study area.
+
+Therefore, we do not reject the null hypothesis, H0, as the random distribution of points given both the observed and theoretical L-function lines fall within the upper and lower envelopes.
+
+Additionally, the significance level in this case, would be high. Any deviations between the observed and theoretical patterns are likely due to random chance rather than any systematic spatial pattern.
+
+# 6. Observations Concluded
+
+Looking at our findings, we can conclude that most of the recycling points in Hong Kong are clustered. We can conclude this from the results of the G-function and F-function that the recycling points in Hong Kong are not randomly distributed and this evidence is further corroborated from the ppp graph on Section 4.2. We can observe that the darker areas have many recycling points which means they are clustered in certain areas of Hong Kong.
+
+On the other hand, our K-function and L-function analysis on Yau Ma Tei has shown us that some districts in Hong Kong their recycling stations are randomly distributed and dispersed evenly. This is also corroborated in Section 4.1 where we can observe the whole area of Yau Ma Tei, it shows us that the recycling stations are really dispersed randomly and you can find a recycling station in many corners of Yau Ma Tei.
+
+This proves that while most of the recycling stations in Hong Kong are clustered but there are still districts where the recycling stations are fairly dispersed, we cannot use conclude that all areas of Hong Kong recycling stations do not follow CSR.
+
+This gives rise to the opinion that an in-depth analysis into each district of Hong Kong would be more helpful and meaningful for government officials. This is because using an over arching analysis may not reveal the real situation in Hong Kong as each region is different, by delving into each district we get to understand the different reasons that are causing the clustering of recycling points and how is it affect citizens' habit to recycle. Afterwards, respective actions can be taken for different regions due to the different recycling points outlays.
+
+Furthermore, there are areas in Hong Kong that do not have many recycling stations simply because those are mountain or farm areas, not a lot recycling stations are required as well as their lifestyle is not like city life where consumption is high, they live a sedentary lifestyle.

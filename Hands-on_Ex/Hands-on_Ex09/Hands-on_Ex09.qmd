@@ -14,7 +14,9 @@ execute:
   fig_retine: 3
 editor: visual
 ---
+
 # 1. Installing and Loading R packages
+
 ```{r}
 pacman::p_load(sf, spdep, GWmodel, SpatialML, readr,
                tmap, rsample, Metrics, tidyverse)
@@ -52,12 +54,14 @@ corrplot::corrplot(cor(mdata_nogeo[, 2:17]),
 ```
 
 #2. Retriving the Stored Data
+
 ```{r}
 train_data <- read_rds("data/model/train_data.rds")
 test_data <- read_rds("data/model/test_data.rds")
 ```
 
 ## 2.1 Building a non-spatial multiple linear regression
+
 ```{r}
 price_mlr <- lm(resale_price ~ floor_area_sqm +
                   storey_order + remaining_lease_mths +
@@ -77,12 +81,14 @@ write_rds(price_mlr, "data/model/price_mlr.rds" )
 # 3. gwr predictive method
 
 ## 3.1 Converting the sf data.frame to SpatialPointDataFrame
+
 ```{r}
 train_data_sp <- as_Spatial(train_data)
 train_data_sp
 ```
 
 ## 3.2 Computing adaptive bandwidth
+
 ```{r}
 #| eval: false
 bw_adaptive <- bw.gwr(resale_price ~ floor_area_sqm +
@@ -133,6 +139,7 @@ write_rds(gwr_adaptive, "data/model/gwr_adaptive.rds")
 ```
 
 ## 3.4 Retrieve gwr output object
+
 ```{r}
 gwr_adaptive <- read_rds("data/model/gwr_adaptive.rds")
 ```
@@ -142,6 +149,7 @@ gwr_adaptive
 ```
 
 ## 3.5 Converting the test data from sf data.frame to SpatialPointDataFrame
+
 ```{r}
 test_data_sp <- test_data %>%
   as_Spatial()
@@ -149,6 +157,7 @@ test_data_sp
 ```
 
 ## 3.6 Computing adaptive bandwidth for the test data
+
 ```{r}
 gwr_bw_test_adaptive <- bw.gwr(resale_price ~ floor_area_sqm +
                   storey_order + remaining_lease_mths +
@@ -165,6 +174,7 @@ gwr_bw_test_adaptive <- bw.gwr(resale_price ~ floor_area_sqm +
 ```
 
 ## 3.7 Computing predicted values of the test data
+
 ```{r}
 #| eval: false
 gwr_pred <- gwr.predict(formula = resale_price ~
@@ -185,7 +195,8 @@ gwr_pred <- gwr.predict(formula = resale_price ~
 
 # 4. Preparing coordinates data
 
-## 4.1  Extracting coordinates data
+## 4.1 Extracting coordinates data
+
 ```{r}
 coords <- st_coordinates(mdata)
 coords_train <- st_coordinates(train_data)
@@ -198,12 +209,14 @@ coords_test <- write_rds(coords_test, "data/model/coords_test.rds" )
 ```
 
 ## 4.2 Droping geometry field
+
 ```{r}
 train_data <- train_data %>% 
   st_drop_geometry()
 ```
 
 # 5. Calibrating Random Forest Model
+
 ```{r}
 #| eval: false
 set.seed(1234)
@@ -230,6 +243,7 @@ rf
 # 6. Calibrating Geographical Random Forest Model
 
 ## 6.1 Calibrating using training data
+
 ```{r}
 #| eval: false
 set.seed(1234)
@@ -257,12 +271,14 @@ gwRF_adaptive <- read_rds("data/model/gwRF_adaptive.rds")
 ## 6.2 Predicting by using test data
 
 ### Preparing the test data
+
 ```{r}
 test_data <- cbind(test_data, coords_test) %>%
   st_drop_geometry()
 ```
 
 ### Predicting with test data
+
 ```{r}
 #| eval: false
 gwRF_pred <- predict.grf(gwRF_adaptive, 
@@ -279,6 +295,7 @@ GRF_pred <- write_rds(gwRF_pred, "data/model/GRF_pred.rds")
 ```
 
 ### Converting the predicting output into a data frame
+
 ```{r}
 GRF_pred <- read_rds("data/model/GRF_pred.rds")
 GRF_pred_df <- as.data.frame(GRF_pred)
@@ -293,20 +310,17 @@ write_rds(test_data_p, "data/model/test_data_p.rds")
 ```
 
 ## 6.3 Calculating Root Mean Square Error
+
 ```{r}
 rmse(test_data_p$resale_price, 
      test_data_p$GRF_pred)
 ```
 
 ## 6.2 Visualising the predicted values
+
 ```{r}
 ggplot(data = test_data_p,
        aes(x = GRF_pred,
            y = resale_price)) +
   geom_point()
 ```
-
-
-
-
-
