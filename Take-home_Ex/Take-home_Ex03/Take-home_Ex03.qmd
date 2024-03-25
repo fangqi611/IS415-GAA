@@ -246,6 +246,7 @@ In this section of performing second point spatial analysis, we will be studying
 4.  Government officials can work together with community organizations, businesses, and residents to develop and implement effective recycling programs tailored to the specific needs of each area.
 
 We are rescaling point patterns to a new unit of distance to allow for easier interpretation of the spatial distribution of points in kilometers rather than the original units.
+
 ```{r}
 hk_cp_ppp.km = rescale(hk_cp_ppp, 1000, "km")
 yaumatei_cp_ppp.km = rescale(yaumatei_cp_ppp, 1000, "km")
