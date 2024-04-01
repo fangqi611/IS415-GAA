@@ -14,7 +14,9 @@ execute:
   fig_retine: 3
 editor: visual
 ---
+
 # 0. Getting Started
+
 ```{r}
 pacman::p_load(tmap, sf, sp,
                performance, reshape2,
@@ -24,12 +26,14 @@ pacman::p_load(tmap, sf, sp,
 # 2. The Data
 
 ## 2.1 Computing Distance Matrix
+
 ```{r}
 mpsz <- read_rds("data/rds/mpsz.rds")
 mpsz
 ```
 
 ## 2.2 Converting from sf data.table to SpatialPolygonsDataFrame
+
 ```{r}
 mpsz_sp <- as(mpsz, "Spatial")
 mpsz_sp
@@ -44,7 +48,8 @@ dist <- spDists(mpsz_sp,
 head(dist, n=c(10, 10))
 ```
 
-## 2.3  Labelling column and row heanders of a distance matrix
+## 2.3 Labelling column and row heanders of a distance matrix
+
 ```{r}
 sz_names <- mpsz$SUBZONE_C
 ```
@@ -55,6 +60,7 @@ rownames(dist) <- paste0(sz_names)
 ```
 
 ## 2.4 Pivoting distance value by SUBZONE_C
+
 ```{r}
 distPair <- melt(dist) %>%
   rename(dist = value)
@@ -62,6 +68,7 @@ head(distPair, 10)
 ```
 
 ## 2.5 Updating intra-zonal distances
+
 ```{r}
 distPair %>%
   filter(dist > 0) %>%
@@ -95,6 +102,7 @@ distPair <- read_rds("data/rds/distPair.rds")
 ```
 
 # 3. Preparing flow data
+
 ```{r}
 od_data_fii <- read_rds("data/rds/od_data_fii.rds")
 ```
@@ -109,7 +117,8 @@ flow_data <- od_data_fii %>%
 head(flow_data, 10)
 ```
 
-## 3.1  Separating intra-flow from passenger volume df
+## 3.1 Separating intra-flow from passenger volume df
+
 ```{r}
 flow_data$FlowNoIntra <- ifelse(
   flow_data$ORIGIN_SZ == flow_data$DESTIN_SZ, 
@@ -120,6 +129,7 @@ flow_data$offset <- ifelse(
 ```
 
 ## 3.2 Combining passenger volume data with distance value
+
 ```{r}
 flow_data$ORIGIN_SZ <- as.factor(flow_data$ORIGIN_SZ)
 flow_data$DESTIN_SZ <- as.factor(flow_data$DESTIN_SZ)
@@ -135,11 +145,13 @@ flow_data1 <- flow_data %>%
 # 4. Preparing Origin and Destination Attributes
 
 ## 4.1 Importing population data
+
 ```{r}
 pop <- read_csv("data/aspatial/pop.csv")
 ```
 
 ## 4.2 Geospatial data wrangling
+
 ```{r}
 pop <- pop %>%
   left_join(mpsz,
@@ -151,6 +163,7 @@ pop <- pop %>%
 ```
 
 ## 4.3 Preparing origin attribute
+
 ```{r}
 flow_data1 <- flow_data1 %>%
   left_join(pop,
@@ -162,6 +175,7 @@ flow_data1 <- flow_data1 %>%
 ```
 
 ## 4.4 Preparing destination attribute
+
 ```{r}
 #| eval: false
 SIM_data <- flow_data1 %>%
@@ -181,11 +195,13 @@ write_rds(SIM_data, "data/rds/SIM_data.rds")
 # 5. Calibrating Spatial Interaction Models
 
 ## 5.1 Importing the modelling data
+
 ```{r}
 SIM_data <- read_rds("data/rds/SIM_data.rds")
 ```
 
 ## 5.2 Visualising the dependent variable
+
 ```{r}
 ggplot(data = SIM_data,
        aes(x = TRIPS)) +
@@ -209,6 +225,7 @@ ggplot(data = SIM_data,
 ```
 
 ## 5.3 Checking for variables with zero values
+
 ```{r}
 summary(SIM_data)
 ```
@@ -239,6 +256,7 @@ summary(SIM_data)
 ```
 
 ## 5.4 Unconstrained Spatial Interaction Model
+
 ```{r}
 uncSIM <- glm(formula = TRIPS ~ 
                 log(ORIGIN_AGE25_64) + 
@@ -251,6 +269,7 @@ uncSIM
 ```
 
 ## 5.5 R-squared function
+
 ```{r}
 CalcRSquared <- function(observed,estimated){
   r <- cor(observed,estimated)
@@ -268,6 +287,7 @@ r2_mcfadden(uncSIM)
 ```
 
 ## 5.6 Origin (Production) constrained SIM
+
 ```{r}
 orcSIM <- glm(formula = TRIPS ~ 
                  ORIGIN_SZ +
@@ -284,6 +304,7 @@ CalcRSquared(orcSIM$data$TRIPS, orcSIM$fitted.values)
 ```
 
 ## 5.7 Destination constrained
+
 ```{r}
 decSIM <- glm(formula = TRIPS ~ 
                 DESTIN_SZ + 
@@ -300,6 +321,7 @@ CalcRSquared(decSIM$data$TRIPS, decSIM$fitted.values)
 ```
 
 ## 5.8 Doubly constrained
+
 ```{r}
 dbcSIM <- glm(formula = TRIPS ~ 
                 ORIGIN_SZ + 
@@ -316,6 +338,7 @@ CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
 ```
 
 ## 5.9 Model comparison
+
 ```{r}
 model_list <- list(unconstrained=uncSIM,
                    originConstrained=orcSIM,
@@ -329,6 +352,7 @@ compare_performance(model_list,
 ```
 
 ## 5.10 Visualising fitted values
+
 ```{r}
 df <- as.data.frame(uncSIM$fitted.values) %>%
   round(digits = 0)
@@ -404,17 +428,3 @@ ggarrange(unc_p, orc_p, dec_p, dbc_p,
           ncol = 2,
           nrow = 2)
 ```
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
